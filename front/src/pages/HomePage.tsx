@@ -2,8 +2,12 @@ const HomePage = () => {
   return (
     <div className="">
       <div className="flex items-center justify-center pt-20 px-4">
-        <div className="bg-base-100 rounded-lg shadow-cl w-full max-w-6xl h-[calc(100vh-8rem)]">
-          <div className="flex h-full rounded-lg overflow-hidden">ahora siiiii</div>
+        <div className="p-8">
+          <h1 className="text-2xl font-bold">Welcome to Verify Influencers</h1>
+          <p className="mt-4">
+            Use this tool to analyze health claims from influencers and verify them with trusted
+            scientific journals.
+          </p>
         </div>
       </div>
     </div>

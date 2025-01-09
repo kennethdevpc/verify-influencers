@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ScientificJournal from '../components/ScientificJournal';
 import { Link } from 'react-router-dom';
 import { MoveLeft } from 'lucide-react';
@@ -6,17 +6,15 @@ import { MoveLeft } from 'lucide-react';
 type Props = {};
 
 function ResearchTaskPage({}: Props) {
+  const [influencerName, setInfluencerName] = useState('');
+  const [claimsToAnalyze, setClaimsToAnalyze] = useState(50);
+  const handleStartResearch = () => {
+    console.log(`Starting research for: ${influencerName}`);
+  };
   return (
-    <div className="p-6 bg-base-200 text-base-content rounded-lg container mx-auto pt-24">
-      <div className="flex items-center gap-4 mb-6">
-        <div className="size-9 rounded-lg  flex items-center justify-center">
-          <MoveLeft className="w-5 h-5 text-green-400" />
-        </div>
-        <h3 className="    text-transparent bg-clip-text bg-gradient-to-r from-green-400  to-emerald-600">
-          Back to Dashboard
-        </h3>
-        <h2 className="text-2xl font-semibold mb-4">Research Tasks</h2>
-      </div>
+    <div className="p-6 bg-base-200 text-base-content rounded-lg container mx-auto pt-">
+      <h2 className="text-2xl font-semibold mb-1">Research Tasks</h2>
+
       <div className="flex space-x-4 mb-6">
         <button className="btn btn-primary flex-1">Specific Influencer</button>
         <button className="btn btn-secondary flex-1">Discover New</button>
@@ -30,17 +28,26 @@ function ResearchTaskPage({}: Props) {
           <button className="btn btn-outline">All Time</button>
         </div>
       </div>
+
       <div className="mb-4">
         <label className="block text-sm font-medium mb-2">Influencer Name</label>
         <input
           type="text"
           placeholder="Enter influencer name"
           className="input input-bordered w-full"
+          value={influencerName}
+          onChange={(e) => setInfluencerName(e.target.value)}
         />
       </div>
       <div className="mb-4">
         <label className="block text-sm font-medium mb-2">Claims to Analyze Per Influencer</label>
-        <input type="number" placeholder="50" className="input input-bordered w-full" />
+        <input
+          type="number"
+          placeholder="50"
+          className="input input-bordered w-full"
+          value={claimsToAnalyze}
+          onChange={(e) => setClaimsToAnalyze(Number(e.target.value))}
+        />
       </div>
       <ScientificJournal />
       <div className="mb-4">
@@ -50,6 +57,12 @@ function ResearchTaskPage({}: Props) {
           className="textarea textarea-bordered w-full"
         ></textarea>
       </div>
+      <button
+        onClick={handleStartResearch}
+        className="mt-6 px-4 py-2 bg-blue-500 text-white rounded"
+      >
+        Start Research
+      </button>
     </div>
   );
 }
