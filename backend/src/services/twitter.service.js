@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { TWITTER_BEARER_TOKEN } from '../config/apiKeys.js';
+import Influencer from '../models/Influencer.model.js';
 
 const BASE_URL = 'https://api.x.com/2';
 
@@ -22,8 +23,10 @@ const BASE_URL = 'https://api.x.com/2';
 //   }
 // }
 async function getUserByUsername(username) {
+  let userNameJoined = username.split(' ').join('_');
+
   try {
-    const response = await axios.get(`${BASE_URL}/users/by/username/${username}`, {
+    const response = await axios.get(`${BASE_URL}/users/by/username/${userNameJoined}`, {
       headers: {
         Authorization: `Bearer ${TWITTER_BEARER_TOKEN}`,
       },
@@ -63,10 +66,37 @@ export async function getUserTweets(userId, maxResults = 100) {
 }
 
 // Buscar tweets relacionados con salud
-export async function searchHealthTweets(username) {
+export async function searchHealthTweets(usernameTexted) {
   try {
-    const user = await getUserByUsername(username);
+    const userInDBName = await Influencer.findOne({ username: usernameTexted });
+    if (userInDBName) {
+      return userInDBName;
+      throw new Error('Usuario ya existe en la base de datos con ese nombre buscar con ese nombre');
+    }
+    const user = await getUserByUsername(usernameTexted);
     if (!user) throw new Error('Usuario no encontrado');
+    const { id, name, username } = user;
+
+    const userInDB = await Influencer.findOne({ id });
+    if (userInDB) throw new Error('Usuario ya existe en la base de datos');
+    const newInflu = new Influencer({
+      //--------En mongo se crea un new user, en mysql es con create,
+      id,
+      name,
+      username,
+    });
+    if (newInflu) {
+      // generate jwt token here
+      await newInflu.save();
+      res.status(201).json({
+        _id: newInflu._id,
+        id: newInflu.id,
+        name: newInflu.name,
+        username: newInflu.username,
+      });
+    } else {
+      throw new Error('Invalid influencer data');
+    }
     return user;
     const tweets = await getUserTweets(user.id);
 
