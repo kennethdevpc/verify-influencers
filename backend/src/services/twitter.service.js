@@ -58,7 +58,7 @@ export async function getUserTweets(userId, maxResults = 100) {
         'tweet.fields': 'created_at,public_metrics',
         expansions: 'author_id',
         'user.fields': 'username,public_metrics',
-        // exclude: 'replies,retweets',
+        exclude: 'replies,retweets',
       },
       timeout: 10000, // Timeout en milisegundos (10 segundos)
     });
