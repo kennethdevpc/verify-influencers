@@ -53,19 +53,29 @@ export async function getUserTweets(userId, maxResults = 100) {
       headers: {
         Authorization: `Bearer ${TWITTER_BEARER_TOKEN}`,
       },
-      // params: {
-      //   max_results: maxResults,
-      //   tweet_fields: 'created_at,public_metrics',
-      //   exclude: 'retweets,replies',
-      // },
+      params: {
+        max_results: maxResults,
+        'tweet.fields': 'created_at,public_metrics',
+        expansions: 'author_id',
+        'user.fields': 'username,public_metrics',
+        // exclude: 'replies,retweets',
+      },
+      timeout: 10000, // Timeout en milisegundos (10 segundos)
     });
     console.log('Response Data:', response.data);
 
     return response.data.data;
   } catch (error) {
-    console.error('Error getting tweets:', error);
-    return error;
-    throw error;
+    if (error.response && error.response.status === 429) {
+      const retryAfter = error.response.headers['retry-after'];
+      const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 30000; // Default to 30s
+      console.log(`Rate limit exceeded. Retrying after ${waitTime / 1000}s...`);
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
+      return getUserTweets(userId, maxResults); // Retry
+    } else {
+      console.error('Error getting tweets:', error.response?.data || error.message);
+      throw error;
+    }
   }
 }
 
