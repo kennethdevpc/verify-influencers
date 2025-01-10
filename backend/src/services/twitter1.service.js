@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { TWITTER_BEARER_TOKEN } from '../config/apiKeys.js';
 import Influencer from '../models/Influencer.model.js';
-import e from 'express';
 
 const BASE_URL = 'https://api.x.com/2';
 
@@ -53,104 +52,51 @@ export async function getUserTweets(userId, maxResults = 100) {
       headers: {
         Authorization: `Bearer ${TWITTER_BEARER_TOKEN}`,
       },
-      // params: {
-      //   max_results: maxResults,
-      //   tweet_fields: 'created_at,public_metrics',
-      //   exclude: 'retweets,replies',
-      // },
+      params: {
+        max_results: maxResults,
+        tweet_fields: 'created_at,public_metrics',
+        exclude: 'retweets,replies',
+      },
     });
-    console.log('Response Data:', response.data);
-
     return response.data.data;
   } catch (error) {
     console.error('Error getting tweets:', error);
-    return error;
     throw error;
   }
 }
 
 // Buscar tweets relacionados con salud
 export async function searchHealthTweets(usernameTexted) {
-  let user;
   try {
     const userInDBName = await Influencer.findOne({ username: usernameTexted });
     if (userInDBName) {
-      user = userInDBName;
-
-      // throw new Error('Usuario ya existe en la base de datos con ese nombre buscar con ese nombre');
-    } else {
-      const userApi = await getUserByUsername(usernameTexted);
-      if (!userApi) throw new Error('Usuario no encontrado');
-      const { id, name, username } = userApi; //--exist en api
-
-      const userInDB = await Influencer.findOne({ id });
-      if (userInDB) {
-        user = userInDB;
-      } else {
-        const newInflu = new Influencer({
-          id,
-          name,
-          username,
-        });
-        if (newInflu) {
-          // generate jwt token here
-          await newInflu.save();
-          user = newInflu;
-        } else {
-          throw new Error('Invalid influencer data');
-        }
-      }
+      return userInDBName;
+      throw new Error('Usuario ya existe en la base de datos con ese nombre buscar con ese nombre');
     }
-    return user;
-    const tweets = await getUserTweets(user.id);
-    return tweets;
+    const user = await getUserByUsername(usernameTexted);
+    if (!user) throw new Error('Usuario no encontrado');
+    const { id, name, username } = user;
 
-    const healthKeywords = ['salud', 'health', 'nutrition', 'diet', 'exercise', 'wellness'];
-    const healthTweets = tweets.filter((tweet) =>
-      healthKeywords.some((keyword) => tweet.text.toLowerCase().includes(keyword))
-    );
-
-    return { user, tweets: healthTweets };
-  } catch (error) {
-    console.error('Error searching health tweets:', error);
-    throw error;
-  }
-}
-
-export async function searchHealthTweetss(usernameTexted) {
-  try {
-    const userInDBName = await Influencer.findOne({ username: usernameTexted });
-    let user;
-    if (userInDBName) {
-      user = userInDBName;
+    const userInDB = await Influencer.findOne({ id });
+    if (userInDB) throw new Error('Usuario ya existe en la base de datos');
+    const newInflu = new Influencer({
+      //--------En mongo se crea un new user, en mysql es con create,
+      id,
+      name,
+      username,
+    });
+    if (newInflu) {
+      // generate jwt token here
+      await newInflu.save();
+      res.status(201).json({
+        _id: newInflu._id,
+        id: newInflu.id,
+        name: newInflu.name,
+        username: newInflu.username,
+      });
     } else {
-      user = await getUserByUsername(usernameTexted);
-      if (!user) throw new Error('Usuario no encontrado');
-      let { id, name, username } = user;
-      console.log('buscando por username', user);
-
-      const userInDB = await Influencer.findOne({ id });
-      if (userInDB) {
-        console.log('ya existe pero el nombre no se encontro inicialmente');
-        user = userInDB;
-      } else {
-        //--si no existe en la base de datos se crea
-        const newInflu = new Influencer({
-          //--------En mongo se crea un new user, en mysql es con create,
-          id,
-          name,
-          username,
-        });
-        if (newInflu) {
-          // generate jwt token here
-          await newInflu.save();
-          user = newInflu;
-        } else {
-          throw new Error('Invalid influencer data');
-        }
-      }
+      throw new Error('Invalid influencer data');
     }
-
     return user;
     const tweets = await getUserTweets(user.id);
 

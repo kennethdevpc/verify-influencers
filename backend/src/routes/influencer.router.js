@@ -3,10 +3,12 @@ import {
   analyzeInfluencer,
   getInfluencerDetails,
   getInfluencerData,
+  getUserTweetsFuncion,
 } from '../controllers/influencer.controller.js';
 const router = express.Router();
 
 router.post('/analyze', analyzeInfluencer);
+router.post('/tweets', getUserTweetsFuncion);
 router.get('/details/:id', getInfluencerDetails);
 router.get('/data/:name', getInfluencerData);
 
