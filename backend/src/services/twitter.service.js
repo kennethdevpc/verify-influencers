@@ -58,13 +58,15 @@ export async function getUserTweets(userId, maxResults = 100) {
         'tweet.fields': 'created_at,public_metrics',
         expansions: 'author_id',
         'user.fields': 'username,public_metrics',
-        exclude: 'replies,retweets',
+        // exclude: 'replies,retweets',
       },
       timeout: 10000, // Timeout en milisegundos (10 segundos)
     });
     console.log('Response Data:', response.data);
 
-    return response.data.data;
+    let twwitsfiltered = filterOriginalTweets(response.data.data);
+
+    return twwitsfiltered;
   } catch (error) {
     if (error.response && error.response.status === 429) {
       const retryAfter = error.response.headers['retry-after'];
@@ -174,4 +176,16 @@ export async function searchHealthTweetss(usernameTexted) {
     console.error('Error searching health tweets:', error);
     throw error;
   }
+}
+
+export function filterOriginalTweets(tweets) {
+  return tweets.filter((tweet) => {
+    // Excluir respuestas (tweets que comienzan con '@')
+    const isReply = tweet.text.trim().startsWith('@');
+    // Excluir retweets (tweets que comienzan con 'RT @')
+    const isRetweet = tweet.text.trim().startsWith('RT @');
+
+    // Solo mantener tweets originales (no respuestas ni retweets)
+    return !isReply && !isRetweet;
+  });
 }

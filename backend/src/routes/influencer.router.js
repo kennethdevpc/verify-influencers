@@ -9,6 +9,7 @@ const router = express.Router();
 
 router.post('/analyze', analyzeInfluencer);
 router.post('/tweets', getUserTweetsFuncion);
+router.post('/tweetsjson', getUserTweetsFuncion);
 router.get('/details/:id', getInfluencerDetails);
 router.get('/data/:name', getInfluencerData);
 

@@ -1,5 +1,9 @@
 import { fetchTwitterData } from '../services/influencer.service.js';
-import { getUserTweets, searchHealthTweets } from '../services/twitter.service.js';
+import {
+  filterOriginalTweets,
+  getUserTweets,
+  searchHealthTweets,
+} from '../services/twitter.service.js';
 export const analyzeInfluencerA = async (req, res) => {
   console.log(req.body);
   res.send('analyzeInfluencer');
@@ -56,5 +60,10 @@ export const analyzeInfluencer = async (req, res) => {
 export const getUserTweetsFuncion = async (req, res) => {
   console.log(req.body);
   const data = await getUserTweets(req.body.id);
+  res.send(data);
+};
+export const getUserTweetsFiltered = async (req, res) => {
+  console.log(req.body);
+  const data = await filterOriginalTweets(req.body);
   res.send(data);
 };
