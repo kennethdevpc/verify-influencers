@@ -1,5 +1,5 @@
 import { fetchTwitterData } from '../services/influencer.service.js';
-import { filterHealthTweets } from '../services/openIA.service.js';
+import { extractClaimsFromTweets, filterHealthTweets } from '../services/openIA.service.js';
 import {
   filterOriginalTweets,
   getUserTweets,
@@ -71,5 +71,10 @@ export const getUserTweetsFiltered = async (req, res) => {
 //---usamos el servicio de openIAPI para obtener los tweets
 export const getHealthTweets = async (req, res) => {
   const data = await filterHealthTweets(req.body);
+  res.send(data);
+};
+//---usamos el servicio de openIAPI para obtener los tweets
+export const getClaims = async (req, res) => {
+  const data = await extractClaimsFromTweets(req.body);
   res.send(data);
 };

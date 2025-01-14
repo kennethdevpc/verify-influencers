@@ -5,6 +5,7 @@ import {
   getInfluencerData,
   getUserTweetsFuncion,
   getHealthTweets,
+  getClaims,
 } from '../controllers/influencer.controller.js';
 const router = express.Router();
 
@@ -12,6 +13,7 @@ router.post('/analyze', analyzeInfluencer);
 router.post('/tweets', getUserTweetsFuncion);
 router.post('/tweetsjson', getUserTweetsFuncion);
 router.post('/healthTweets', getHealthTweets);
+router.post('/claims', getClaims);
 router.get('/details/:id', getInfluencerDetails);
 router.get('/data/:name', getInfluencerData);
 
