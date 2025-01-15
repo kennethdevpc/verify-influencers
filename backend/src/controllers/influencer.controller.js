@@ -1,5 +1,5 @@
 import { fetchTwitterData } from '../services/influencer.service.js';
-import { extractClaimsFromTweets, filterHealthTweets } from '../services/openIA.service.js';
+import { extractClaimsFromTweets, filterHealthTweets } from '../services/openIAB.service.js';
 import {
   filterOriginalTweets,
   getUserTweets,

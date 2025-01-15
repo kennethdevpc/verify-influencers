@@ -6,25 +6,32 @@ const openai = new OpenAI({
   apiKey: `${process.env.OPENAI_API_KEY}`,
 });
 // Función para filtrar tweets relacionados con la salud usando GPT-4
-export async function filterHealthTweets(tweets) {
+export async function filterHealthTweet(tweets) {
   const healthTweets = [];
-  for (const tweet of tweets) {
-    const prompt = `¿El siguiente tweet trata sobre salud? Responde "sí" o "no" pero sin puntos ni comas.\nTweet: "${tweet.text}"`;
 
+  const promises = tweets.map(async (tweet) => {
+    const prompt = `¿El siguiente tweet trata sobre salud? Responde "sí" o "no" pero sin puntos ni comas.\nTweet: "${tweet.text}"`;
     try {
       const response = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
       });
       const answer = response.choices[0].message.content.trim().toLowerCase();
-      if (answer === 'sí') {
-        healthTweets.push(tweet);
-      }
+      return answer === 'sí' ? tweet : null;
+      // if (answer === 'sí') {
+      //   healthTweets.push(tweet);
+
+      // }
     } catch (error) {
       console.error('Error al analizar el tweet:', error);
       return error;
     }
-  }
+  });
+
+  const results = await Promise.all(promises);
+
+  // Filtra los resultados para eliminar los "null" (errores o respuestas negativas)
+  return results.filter((tweet) => tweet !== null);
 
   return healthTweets;
 }
@@ -94,4 +101,90 @@ export async function extractClaimsFromTweets(tweets) {
     }
   }
   return claims;
+}
+
+export async function filterHealthTweets(tweets) {
+  const healthTweets = [];
+  const seenTexts = new Set();
+
+  function normalizeText(text) {
+    return text
+      .toLowerCase()
+      .replace(/[^\w\s]/g, '') //elimino caracteres que no sean letras y _
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function isTextSimilarSimple(text1, text2) {
+    const words1 = new Set(text1.split(' '));
+    const words2 = new Set(text2.split(' '));
+    const intersection = new Set([...words1].filter((x) => words2.has(x)));
+    const smallerSetSize = Math.min(words1.size, words2.size);
+    return intersection.size / smallerSetSize > 0.7; // Umbral simple de similitud
+  }
+
+  async function areTweetsSimilarDeep(tweet1, tweet2) {
+    const prompt = `¿Los siguientes dos tweets tienen un significado similar?\nTweet 1: "${tweet1.text}"\nTweet 2: "${tweet2.text}"\nResponde "sí" o "no" pero sin puntos ni comas.`;
+
+    try {
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: prompt }],
+      });
+      const answer = response.choices[0].message.content.trim().toLowerCase();
+      return answer === 'sí';
+    } catch (error) {
+      console.error('Error al analizar la similitud entre tweets:', error);
+      return false;
+    }
+  }
+
+  for (const tweet of tweets) {
+    const prompt = `¿El siguiente tweet trata sobre salud? Responde "sí" o "no" pero sin puntos ni comas.\nTweet: "${tweet.text}"`;
+
+    try {
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: prompt }],
+      });
+      const answer = response.choices[0].message.content.trim().toLowerCase();
+      if (answer === 'sí') {
+        const normalizedText = normalizeText(tweet.text);
+
+        // Prefiltrado por normalización
+        if (seenTexts.has(normalizedText)) continue;
+
+        let isDuplicate = false;
+
+        // Prefiltrado por palabras similares
+        for (const existingTweet of healthTweets) {
+          const normalizedExistingText = normalizeText(existingTweet.text);
+          if (isTextSimilarSimple(normalizedText, normalizedExistingText)) {
+            isDuplicate = true;
+            break;
+          }
+        }
+
+        // Si pasa el prefiltrado, usa el modelo para comparación profunda
+        if (!isDuplicate) {
+          for (const existingTweet of healthTweets) {
+            if (await areTweetsSimilarDeep(existingTweet, tweet)) {
+              isDuplicate = true;
+              break;
+            }
+          }
+        }
+
+        if (!isDuplicate) {
+          healthTweets.push(tweet);
+          seenTexts.add(normalizedText);
+        }
+      }
+    } catch (error) {
+      console.error('Error al analizar el tweet:', error);
+      return error;
+    }
+  }
+
+  return healthTweets;
 }
