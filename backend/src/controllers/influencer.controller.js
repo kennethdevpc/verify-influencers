@@ -1,5 +1,9 @@
 import { fetchTwitterData } from '../services/influencer.service.js';
-import { extractClaimsFromTweets, filterHealthTweets } from '../services/openIAB.service.js';
+import {
+  extractClaimsFromTweets,
+  extractClaimsFromTweetsfilteredTweets,
+  filterHealthTweets,
+} from '../services/openIAB.service.js';
 import {
   filterOriginalTweets,
   getUserTweets,
@@ -76,5 +80,10 @@ export const getHealthTweets = async (req, res) => {
 //---usamos el servicio de openIAPI para obtener los tweets
 export const getClaims = async (req, res) => {
   const data = await extractClaimsFromTweets(req.body);
+  res.send(data);
+};
+//---usamos el servicio de openIAPI para obtener los tweets
+export const getClaimsfilteredTweets = async (req, res) => {
+  const data = await extractClaimsFromTweetsfilteredTweets(req.body);
   res.send(data);
 };
