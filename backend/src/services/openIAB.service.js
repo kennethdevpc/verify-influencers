@@ -83,7 +83,7 @@ export async function extractClaimsFromTweets(filteredTweets) {
 }
 
 export async function extractClaimsFromTweetsfilteredTweets(lines) {
-  let claims = '';
+  let claims = [];
 
   const parsedLines = lines.map((entry) => {
     // Extraer las frases de la "claim"
@@ -96,9 +96,11 @@ export async function extractClaimsFromTweetsfilteredTweets(lines) {
       console.log('claimsRaw', claimsRaw);
 
       if (claims.length <= 0) {
-        claims = claims + claimsRaw.join(' , ');
+        // claims = claims + claimsRaw.join(' , ');
+        claims.push(claimsRaw);
       } else {
-        claims = claims + '-' + claimsRaw.join(' , ');
+        // claims = claims + '-' + claimsRaw.join(' , ');
+        claims.push(claimsRaw);
       }
 
       const categoryType = entry[1]
@@ -118,19 +120,123 @@ export async function extractClaimsFromTweetsfilteredTweets(lines) {
     }
   });
   // return parsedLines;
+  return RepetedClaims(claims);
+
   return claims;
 }
-export async function RepetedClaims2({ text }) {
-  return text;
+
+export async function RepetedClaims(texts) {
+  const healthTweets = [];
+  const seenTexts = new Set();
+
+  // Función para normalizar texto
+  function normalizeText(text) {
+    console.log('normalizando', text);
+    if (text) {
+      return text
+        .toLowerCase()
+        .replace(/[^\w\s]/g, '') // Eliminar caracteres no alfanuméricos
+        .replace(/\s+/g, ' ') // Reemplazar múltiples espacios con uno solo
+        .trim();
+    }
+  }
+
+  async function areTweetsSimilarDeep(tweet1, tweet2) {
+    const prompt = `¿Los siguientes dos tweets tienen un significado similar?\nTweet 1: "${tweet1}"\nTweet 2: "${tweet2}"\nResponde "sí" o "no" pero sin puntos ni comas.`;
+
+    try {
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: prompt }],
+      });
+      const answer = response.choices[0].message.content.trim().toLowerCase();
+      return answer === 'sí';
+    } catch (error) {
+      console.error('Error al analizar la similitud entre tweets:', error);
+      return false;
+    }
+  }
+
+  for (const tweet of texts) {
+    try {
+      const normalizedText = normalizeText(tweet.join());
+
+      if (seenTexts.has(normalizedText)) continue;
+
+      let isDuplicate = false;
+
+      const deepCheckPromises = healthTweets.map((existingTweet) =>
+        areTweetsSimilarDeep(existingTweet, tweet.join())
+      );
+
+      const results = await Promise.all(deepCheckPromises);
+
+      if (results.some((result) => result)) {
+        isDuplicate = true;
+      }
+
+      if (!isDuplicate) {
+        healthTweets.push(tweet);
+        seenTexts.add(normalizedText);
+      }
+    } catch (error) {
+      console.error('Error al analizar el tweet:', error);
+      return error;
+    }
+  }
+  return healthTweets;
 }
-export async function RepetedClaims({ text }) {
+
+export async function RepetedClaims2(text) {
+  async function areTweetsSimilarDeep(tweet1, tweet2) {
+    const prompt = `¿Los siguientes dos tweets tienen un significado similar?\nTweet 1: "${tweet1.text}"\nTweet 2: "${tweet2.text}"\nResponde "sí" o "no" pero sin puntos ni comas.`;
+
+    try {
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: prompt }],
+      });
+      const answer = response.choices[0].message.content.trim().toLowerCase();
+      return answer === 'sí';
+    } catch (error) {
+      console.error('Error al analizar la similitud entre tweets:', error);
+      return false;
+    }
+  }
+
+  const claimsResponsePromises = text.map(async (tweet) => {
+    // let textJoined = tweet.join();
+    // for (const existingTweet of text) {
+    const replicatedTextPromise = text.map((tweetInternal) => {
+      return areTweetsSimilarDeep(tweetInternal.join(), tweet.join());
+    });
+    // if (await areTweetsSimilarDeep(existingTweet, tweet)) {
+    //   isDuplicate = true;
+    //   break;
+    // }
+    // }
+    let results = await Promise.all(replicatedTextPromise);
+
+    console.log('**********', results);
+    return results;
+  });
+  let resultsEnd = await Promise.all(claimsResponsePromises);
+
+  console.log('claimsResponsePromises', resultsEnd);
+  return resultsEnd;
+}
+export async function RepetedClaims1({ text }) {
   const answer = '';
+  // const prompt = `
+  // A continuación, se encuentran varias frases separadas por un guion "-". Si alguna frase es similar en significado a otra, indícalo con un "0" en lugar de "1".
+  // Devuelve una cadena en formato "1-0" donde 1 significa que la afirmacion es única y 0 significa que ya se dijo antes aunque en diferentes palabras .
+  // Las frases están separadas por un guion "-":
+  //   "${text}"
+  // `;
   const prompt = `
-  A continuación, se encuentran varias frases separadas por un guion "-". Si alguna frase es similar en significado a otra, pero mucho significado osea muy cercano al otro, indícalo con un "0" en lugar de "1".
-  Devuelve una cadena en formato "1-0-1-1" donde 1 significa único y 0 significa repetido o similar.
-  Las frases están separadas por un guion "-":
-    "${text}"
-  `;
+  A continuación, se encuentran varias frases separadas unicamente por el caracter  "-", toma esa afirmacion completa y Si alguna frase es similar en significado a otra, indícalo con un "0" en lugar de "1".
+  Devuelve una cadena en formato "1-0" donde 1 significa que la afirmacion es única y 0 significa que ya se dijo antes aunque en diferentes palabras .
+  Las frases están separadas por un guion "-". el txto es:"${text}" solo dame respuestas de 0 o 1, si hay 2 frases habra solo 1 guion ,si hay 3 frases habra 2 guiones y asi sucesivamente, por lo tanto si hay dos frases solo puede haber 2 resultados por ejemplo:1-1 o 1-0 o 0-1 o 0-0`;
   try {
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
