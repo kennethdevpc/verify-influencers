@@ -142,7 +142,8 @@ export async function RepetedClaims(texts) {
   }
 
   async function areTweetsSimilarDeep(tweet1, tweet2) {
-    const prompt = `¿Los siguientes dos tweets tienen un significado similar?\nTweet 1: "${tweet1}"\nTweet 2: "${tweet2}"\nResponde "sí" o "no" pero sin puntos ni comas.`;
+    // const prompt = `¿Los siguientes dos tweets tienen un significado similar?\nTweet 1: "${tweet1}"\nTweet 2: "${tweet2}"\nResponde "sí" o "no" pero sin puntos ni comas.`;
+    const prompt = `¿Los siguientes dos tweets tienen un significado similar? tweet 1:"${tweet1}" teweet 2: "${tweet2}"\nResponde "sí" o "no", si se parecen , o son similares, pero sin puntos ni comas.`;
 
     try {
       const response = await openai.chat.completions.create({
@@ -165,9 +166,10 @@ export async function RepetedClaims(texts) {
 
       let isDuplicate = false;
 
-      const deepCheckPromises = healthTweets.map((existingTweet) =>
-        areTweetsSimilarDeep(existingTweet, tweet.join())
-      );
+      const deepCheckPromises = healthTweets.map((existingTweet) => {
+        console.log('veeeeeeeeeeeeee \n', existingTweet.join(), '--', tweet.join());
+        return areTweetsSimilarDeep(existingTweet.join(), tweet.join());
+      });
 
       const results = await Promise.all(deepCheckPromises);
 
