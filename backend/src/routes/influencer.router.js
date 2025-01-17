@@ -7,6 +7,7 @@ import {
   getHealthTweets,
   getClaims,
   getClaimsfilteredTweets,
+  getClaimsfilteredTweetsRepeted,
 } from '../controllers/influencer.controller.js';
 const router = express.Router();
 
@@ -16,6 +17,7 @@ router.post('/tweetsjson', getUserTweetsFuncion);
 router.post('/healthTweets', getHealthTweets);
 router.post('/claims', getClaims);
 router.post('/claimsfilteredTweets', getClaimsfilteredTweets);
+router.post('/claimsfilteredTweetsRepeted', getClaimsfilteredTweetsRepeted);
 router.get('/details/:id', getInfluencerDetails);
 router.get('/data/:name', getInfluencerData);
 

@@ -3,6 +3,7 @@ import {
   extractClaimsFromTweets,
   extractClaimsFromTweetsfilteredTweets,
   filterHealthTweets,
+  RepetedClaims,
 } from '../services/openIAB.service.js';
 import {
   filterOriginalTweets,
@@ -85,5 +86,9 @@ export const getClaims = async (req, res) => {
 //---usamos el servicio de openIAPI para obtener los tweets
 export const getClaimsfilteredTweets = async (req, res) => {
   const data = await extractClaimsFromTweetsfilteredTweets(req.body);
+  res.send(data);
+};
+export const getClaimsfilteredTweetsRepeted = async (req, res) => {
+  const data = await RepetedClaims(req.body);
   res.send(data);
 };

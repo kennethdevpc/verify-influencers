@@ -7,6 +7,7 @@ const openai = new OpenAI({
 });
 // Función para filtrar tweets relacionados con la salud usando GPT-4
 export async function filterHealthTweets(tweets) {
+  console.info('tweets', tweets);
   const healthTweets = [];
 
   const promises = tweets.map(async (tweet) => {
@@ -82,45 +83,90 @@ export async function extractClaimsFromTweets(filteredTweets) {
 }
 
 export async function extractClaimsFromTweetsfilteredTweets(lines) {
-  return lines.map((entry) => {
+  let claims = '';
+
+  const parsedLines = lines.map((entry) => {
     // Extraer las frases de la "claim"
-    const claimsRaw = entry[0]
-      .split('-')
-      .map((text) => text.trim())
-      .filter((text) => text.length > 0);
-    const tweet = claimsRaw.join('. '); // Reconstruir el tweet original
-    return tweet;
-    const claim1 = claimsRaw[0] || '';
-    const claim2 = claimsRaw[1] || '';
+    if (Array.isArray(entry) && entry.length > 1) {
+      // Limpiar el prefijo de números seguidos de un punto en entry[1]
+      const claimsRaw = entry[0]
+        .split('-')
+        .map((text) => text.replace(/^\d+\.\s*/, '').trim())
+        .filter((text) => text.length > 0);
+      console.log('claimsRaw', claimsRaw);
 
-    // Extraer la categoría
-    const category = entry[1].split('.')[1].trim();
+      if (claims.length <= 0) {
+        claims = claims + claimsRaw.join(' , ');
+      } else {
+        claims = claims + '-' + claimsRaw.join(' , ');
+      }
 
-    // Extraer el valor y la información del "score"
-    const scoreData = entry[2].split('-');
-    const value = scoreData[0].trim(); // Extraemos el valor del score
-    const information = scoreData[1].trim(); // Extraemos la información adicional
+      const categoryType = entry[1]
+        .split('-')
+        .map((text) => text.replace(/^\d+\.\s*/, '').trim())
+        .filter((text) => text.length > 0);
+      const cleanedPhrase = entry[2]
+        .split('-')
+        .map((text) => text.replace(/^\d+\.\s*/, '').trim())
+        .filter((text) => text.length > 0);
 
-    // Crear las estructuras de los claims
-    const claims = [];
-    if (claim1) {
-      claims.push({
-        claim: claim1,
-        category: category,
-        confidenceScore: [value, information],
-      });
+      return { claimsRaw, categoryType, cleanedPhrase };
+    } else {
+      // Manejo en caso de que entry no sea válido
+      console.error('Entry inválido:', entry);
+      return ''; // O algún valor por defecto apropiado
     }
-    if (claim2) {
-      claims.push({
-        claim: claim2,
-        category: category,
-        confidenceScore: [value, information],
-      });
-    }
-
-    return {
-      tweet: tweet,
-      claims: claims,
-    };
   });
+  // return parsedLines;
+  return claims;
+}
+export async function RepetedClaims2({ text }) {
+  return text;
+}
+export async function RepetedClaims({ text }) {
+  const answer = '';
+  const prompt = `
+  A continuación, se encuentran varias frases separadas por un guion "-". Si alguna frase es similar en significado a otra, pero mucho significado osea muy cercano al otro, indícalo con un "0" en lugar de "1".
+  Devuelve una cadena en formato "1-0-1-1" donde 1 significa único y 0 significa repetido o similar.
+  Las frases están separadas por un guion "-":
+    "${text}"
+  `;
+  try {
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    const answer = response.choices[0].message.content.trim();
+
+    return answer;
+  } catch (error) {
+    console.error('Error al verificar similitudes:', error);
+    return null;
+  }
+
+  return answer;
+  // return (text) => {
+  //   return 'hola';
+  //   // const prompt = `
+  //   //   A continuación, se encuentran varias frases separadas por un guion "-". Si alguna frase es similar en significado a otra, indícalo con un "0" en lugar de "1".
+  //   //   Devuelve una cadena en formato "1-0-1-1" donde 1 significa único y 0 significa repetido o similar.
+
+  //   //   Las frases están separadas por un guion "-":
+  //   //   ${'text'}
+  //   // `;
+  //   const prompt = `dame 5 numeros impares`;
+  //   try {
+  //     const response = await openai.chat.completions.create({
+  //       model: 'gpt-4o-mini',
+  //       messages: [{ role: 'user', content: prompt }],
+  //     });
+
+  //     const answer = response.choices[0].message.content.trim();
+  //     return answer; // Deberías devolver la cadena con los valores 1 y 0
+  //   } catch (error) {
+  //     console.error('Error al verificar similitudes:', error);
+  //     return null;
+  //   }
+  // };
 }
