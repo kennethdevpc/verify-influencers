@@ -189,3 +189,69 @@ export function filterOriginalTweets(tweets) {
     return !isReply && !isRetweet;
   });
 }
+
+// //---test para obtener tweets
+// export async function getUserTweets2(userId, maxResults = 100) {
+//   try {
+//     console.log(`Fetching tweets for user ID: ${userId}`);
+//     console.log(`Request URL: ${BASE_URL}/users/${userId}/tweets`);
+
+//     const requestConfig = {
+//       headers: {
+//         Authorization: `Bearer ${TWITTER_BEARER_TOKEN}`,
+//       },
+//       params: {
+//         max_results: maxResults,
+//         'tweet.fields': 'created_at,public_metrics',
+//         expansions: 'author_id',
+//         'user.fields': 'username,public_metrics',
+//       },
+//       timeout: 10000,
+//     };
+
+//     console.log('Request configuration:', JSON.stringify(requestConfig, null, 2));
+
+//     const response = await axios.get(`${BASE_URL}/users/${userId}/tweets`, requestConfig);
+
+//     if (!response.data) {
+//       console.error('No data received in response');
+//       throw new Error('No data received from Twitter API');
+//     }
+
+//     if (!response.data.data) {
+//       console.log('Response received but no tweets found:', response.data);
+//       return [];
+//     }
+
+//     console.log(`Received ${response.data.data.length} tweets before filtering`);
+//     let twwitsfiltered = filterOriginalTweets(response.data.data);
+//     console.log(`Filtered to ${twwitsfiltered.length} original tweets`);
+
+//     return twwitsfiltered;
+//   } catch (error) {
+//     // Log the full error object for debugging
+//     console.error('Full error object:', error);
+
+//     if (error.response) {
+//       console.error('Error response status:', error.response.status);
+//       console.error('Error response headers:', error.response.headers);
+//       console.error('Error response data:', error.response.data);
+
+//       if (error.response.status === 429) {
+//         const retryAfter = error.response.headers['retry-after'];
+//         const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 30000;
+//         console.log(`Rate limit exceeded. Retrying after ${waitTime / 1000}s...`);
+//         await new Promise((resolve) => setTimeout(resolve, waitTime));
+//         return getUserTweets(userId, maxResults);
+//       }
+//     }
+
+//     if (error.code === 'ECONNABORTED') {
+//       console.error('Request timed out after 10 seconds');
+//       throw new Error('Request timed out - Twitter API not responding');
+//     }
+
+//     console.error('Error getting tweets:', error.message);
+//     throw error;
+//   }
+// }
