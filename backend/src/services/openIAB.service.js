@@ -120,7 +120,8 @@ export async function extractClaimsFromTweetsfilteredTweets(lines) {
     }
   });
   // return parsedLines;
-  return RepetedClaims(claims);
+  // return RepetedClaims(claims);
+  return RepetedClaims(parsedLines);
 
   return claims;
 }
@@ -158,17 +159,20 @@ export async function RepetedClaims(texts) {
     }
   }
 
-  for (const tweet of texts) {
+  for (const tweetInfo of texts) {
+    let tweet = tweetInfo.claimsRaw;
+
     try {
-      const normalizedText = normalizeText(tweet.join());
+      const normalizedText = normalizeText(tweet?.join());
 
       if (seenTexts.has(normalizedText)) continue;
 
       let isDuplicate = false;
 
       const deepCheckPromises = healthTweets.map((existingTweet) => {
-        console.log('veeeeeeeeeeeeee \n', existingTweet.join(), '--', tweet.join());
-        return areTweetsSimilarDeep(existingTweet.join(), tweet.join());
+        if (existingTweet) {
+          return areTweetsSimilarDeep(existingTweet.claimsRaw?.join(), tweet?.join());
+        }
       });
 
       const results = await Promise.all(deepCheckPromises);
@@ -178,7 +182,7 @@ export async function RepetedClaims(texts) {
       }
 
       if (!isDuplicate) {
-        healthTweets.push(tweet);
+        healthTweets.push(tweetInfo);
         seenTexts.add(normalizedText);
       }
     } catch (error) {
