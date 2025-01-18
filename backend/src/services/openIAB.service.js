@@ -24,6 +24,16 @@ export async function filterHealthTweets(tweets) {
       // }
     } catch (error) {
       console.error('Error al analizar el tweet:', error);
+      throw {
+        success: false,
+        message:
+          'Error analyzing Api open IA, please review credentials, and keysfor the OpenIA API',
+        error: error.message,
+        errorStatus: error?.status,
+
+        errorCode: error.error?.code,
+      };
+
       return error;
     }
   });
@@ -65,8 +75,15 @@ export async function extractClaimsFromTweets(filteredTweets) {
       const lines = response.choices[0].message.content.trim().split('\n');
       return lines;
     } catch (error) {
-      console.error('Error al procesar el tweet:', error);
-      return null;
+      throw {
+        success: false,
+        message:
+          'Error analyzing Api open IA, please review credentials, and keysfor the OpenIA API',
+        error: error.message,
+        errorStatus: error?.status,
+
+        errorCode: error.error?.code,
+      };
     }
   });
 
@@ -153,8 +170,17 @@ export async function RepetedClaims(texts) {
       const answer = response.choices[0].message.content.trim().toLowerCase();
       return answer === 'sí';
     } catch (error) {
-      console.error('Error al analizar la similitud entre tweets:', error);
-      return false;
+      throw {
+        success: false,
+        message:
+          'Error analyzing Api open IA, please review credentials, and keysfor the OpenIA API',
+        error: error.message,
+        errorStatus: error?.status,
+
+        errorCode: error.error?.code,
+      };
+
+      // throw error;
     }
   }
 

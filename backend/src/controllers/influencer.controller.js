@@ -53,18 +53,30 @@ export const getUserTweetsFuncion = async (req, res) => {
 };
 
 export const getHealthTweets = async (req, res) => {
-  const data = await filterHealthTweets(req.body);
-  res.send(data);
+  try {
+    const data = await filterHealthTweets(req.body);
+    res.send(data);
+  } catch (error) {
+    res.status(500).json(error);
+  }
 };
 //---usamos el servicio de openIAPI para obtener los tweets
 export const getClaims = async (req, res) => {
-  const data = await extractClaimsFromTweets(req.body);
-  res.send(data);
+  try {
+    const data = await extractClaimsFromTweets(req.body);
+    res.send(data);
+  } catch (error) {
+    res.status(500).json(error);
+  }
 };
 //---usamos el servicio de openIAPI para obtener los tweets
 export const getClaimsfilteredTweets = async (req, res) => {
-  const data = await extractClaimsFromTweetsfilteredTweets(req.body);
-  res.send(data);
+  try {
+    const data = await extractClaimsFromTweetsfilteredTweets(req.body);
+    res.send(data);
+  } catch (error) {
+    res.status(500).json(error);
+  }
 };
 
 //---todo delete
