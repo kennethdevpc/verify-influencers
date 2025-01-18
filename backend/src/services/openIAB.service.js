@@ -7,7 +7,6 @@ const openai = new OpenAI({
 });
 // Función para filtrar tweets relacionados con la salud usando GPT-4
 export async function filterHealthTweets(tweets) {
-  console.info('tweets', tweets);
   const healthTweets = [];
 
   const promises = tweets.map(async (tweet) => {
@@ -191,94 +190,4 @@ export async function RepetedClaims(texts) {
     }
   }
   return healthTweets;
-}
-
-export async function RepetedClaims2(text) {
-  async function areTweetsSimilarDeep(tweet1, tweet2) {
-    const prompt = `¿Los siguientes dos tweets tienen un significado similar?\nTweet 1: "${tweet1.text}"\nTweet 2: "${tweet2.text}"\nResponde "sí" o "no" pero sin puntos ni comas.`;
-
-    try {
-      const response = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'user', content: prompt }],
-      });
-      const answer = response.choices[0].message.content.trim().toLowerCase();
-      return answer === 'sí';
-    } catch (error) {
-      console.error('Error al analizar la similitud entre tweets:', error);
-      return false;
-    }
-  }
-
-  const claimsResponsePromises = text.map(async (tweet) => {
-    // let textJoined = tweet.join();
-    // for (const existingTweet of text) {
-    const replicatedTextPromise = text.map((tweetInternal) => {
-      return areTweetsSimilarDeep(tweetInternal.join(), tweet.join());
-    });
-    // if (await areTweetsSimilarDeep(existingTweet, tweet)) {
-    //   isDuplicate = true;
-    //   break;
-    // }
-    // }
-    let results = await Promise.all(replicatedTextPromise);
-
-    console.log('**********', results);
-    return results;
-  });
-  let resultsEnd = await Promise.all(claimsResponsePromises);
-
-  console.log('claimsResponsePromises', resultsEnd);
-  return resultsEnd;
-}
-export async function RepetedClaims1({ text }) {
-  const answer = '';
-  // const prompt = `
-  // A continuación, se encuentran varias frases separadas por un guion "-". Si alguna frase es similar en significado a otra, indícalo con un "0" en lugar de "1".
-  // Devuelve una cadena en formato "1-0" donde 1 significa que la afirmacion es única y 0 significa que ya se dijo antes aunque en diferentes palabras .
-  // Las frases están separadas por un guion "-":
-  //   "${text}"
-  // `;
-  const prompt = `
-  A continuación, se encuentran varias frases separadas unicamente por el caracter  "-", toma esa afirmacion completa y Si alguna frase es similar en significado a otra, indícalo con un "0" en lugar de "1".
-  Devuelve una cadena en formato "1-0" donde 1 significa que la afirmacion es única y 0 significa que ya se dijo antes aunque en diferentes palabras .
-  Las frases están separadas por un guion "-". el txto es:"${text}" solo dame respuestas de 0 o 1, si hay 2 frases habra solo 1 guion ,si hay 3 frases habra 2 guiones y asi sucesivamente, por lo tanto si hay dos frases solo puede haber 2 resultados por ejemplo:1-1 o 1-0 o 0-1 o 0-0`;
-  try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-    });
-
-    const answer = response.choices[0].message.content.trim();
-
-    return answer;
-  } catch (error) {
-    console.error('Error al verificar similitudes:', error);
-    return null;
-  }
-
-  return answer;
-  // return (text) => {
-  //   return 'hola';
-  //   // const prompt = `
-  //   //   A continuación, se encuentran varias frases separadas por un guion "-". Si alguna frase es similar en significado a otra, indícalo con un "0" en lugar de "1".
-  //   //   Devuelve una cadena en formato "1-0-1-1" donde 1 significa único y 0 significa repetido o similar.
-
-  //   //   Las frases están separadas por un guion "-":
-  //   //   ${'text'}
-  //   // `;
-  //   const prompt = `dame 5 numeros impares`;
-  //   try {
-  //     const response = await openai.chat.completions.create({
-  //       model: 'gpt-4o-mini',
-  //       messages: [{ role: 'user', content: prompt }],
-  //     });
-
-  //     const answer = response.choices[0].message.content.trim();
-  //     return answer; // Deberías devolver la cadena con los valores 1 y 0
-  //   } catch (error) {
-  //     console.error('Error al verificar similitudes:', error);
-  //     return null;
-  //   }
-  // };
 }

@@ -2,23 +2,21 @@ import express from 'express';
 import {
   analyzeInfluencer,
   getInfluencerDetails,
-  getInfluencerData,
   getUserTweetsFuncion,
   getHealthTweets,
   getClaims,
   getClaimsfilteredTweets,
-  getClaimsfilteredTweetsRepeted,
 } from '../controllers/influencer.controller.js';
 const router = express.Router();
 
-router.post('/analyze', analyzeInfluencer);
-router.post('/tweets', getUserTweetsFuncion);
-router.post('/tweetsjson', getUserTweetsFuncion);
-router.post('/healthTweets', getHealthTweets);
-router.post('/claims', getClaims);
-router.post('/claimsfilteredTweets', getClaimsfilteredTweets);
-router.post('/claimsfilteredTweetsRepeted', getClaimsfilteredTweetsRepeted);
+router.post('/analyze', analyzeInfluencer); //--obtengo usuario y sus detalles Id y nombre
+router.post('/tweets', getUserTweetsFuncion); //--obtengo los tweets (100 maximo), de un usuario
+
+router.post('/healthTweets', getHealthTweets); //---filtra todo lo que tiene que ver son salu
+router.post('/claims', getClaims); //---Extrae todas las afirmaciones, es decir todos los textos, y genere una categoria y un score
+router.post('/claimsfilteredTweets', getClaimsfilteredTweets); //--obtengo de manera ordenada y filtrada sin repeticiones
+
+//todo Obtener from database
 router.get('/details/:id', getInfluencerDetails);
-router.get('/data/:name', getInfluencerData);
 
 export default router;

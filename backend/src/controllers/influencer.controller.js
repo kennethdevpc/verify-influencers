@@ -8,44 +8,15 @@ import {
 import {
   filterOriginalTweets,
   getUserTweets,
-  searchHealthTweets,
+  searchInfluencer,
 } from '../services/twitter.service.js';
-export const analyzeInfluencerA = async (req, res) => {
-  console.log(req.body);
-  res.send('analyzeInfluencer');
-};
-
-export const getInfluencerDetails = async (req, res) => {
-  res.send('getInfluencerDetails');
-};
-
-// Controlador para manejar la búsqueda de datos de un influencer
-export const getInfluencerData = async (req, res) => {
-  const { name } = req.params;
-  res.send(name);
-  // try {
-  //   // Lógica para obtener datos desde Twitter (o cualquier API)
-  //   const data = await fetchTwitterData(name);
-
-  //   res.status(200).json({
-  //     success: true,
-  //     data,
-  //   });
-  // } catch (error) {
-  //   console.error('Error fetching influencer data:', error.message);
-  //   res.status(500).json({
-  //     success: false,
-  //     message: 'Error fetching influencer data',
-  //   });
-  // }
-};
 
 export const analyzeInfluencer = async (req, res) => {
   try {
     const { username, platform } = req.body;
 
     if (platform === 'twitter') {
-      const data = await searchHealthTweets(username);
+      const data = await searchInfluencer(username);
       return res.json({ success: true, platform, data });
     }
 
@@ -57,23 +28,30 @@ export const analyzeInfluencer = async (req, res) => {
     console.error('Error analyzing influencer:', error);
     res.status(500).json({
       success: false,
-      message: 'Error al analizar el influencer.',
+      message: 'Error analyzing influencer, please review credentials, and keysfor the Tweeter API',
       error: error.message,
+      errorStatus: error.response?.status,
+      errorDetails: error.response?.data?.detail,
     });
   }
 };
 
 export const getUserTweetsFuncion = async (req, res) => {
-  console.log(req.body);
-  const data = await getUserTweets(req.body.id);
-  res.send(data);
+  try {
+    const data = await getUserTweets(req.body.id);
+    res.send(data);
+  } catch (error) {
+    console.error('Error analyzing influencer:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error analyzing influencer, please review credentials, and keysfor the Tweeter API',
+      error: error.message,
+      errorStatus: error.response?.status,
+      errorDetails: error.response?.data?.detail,
+    });
+  }
 };
-export const getUserTweetsFiltered = async (req, res) => {
-  console.log(req.body);
-  const data = await filterOriginalTweets(req.body);
-  res.send(data);
-};
-//---usamos el servicio de openIAPI para obtener los tweets
+
 export const getHealthTweets = async (req, res) => {
   const data = await filterHealthTweets(req.body);
   res.send(data);
@@ -88,7 +66,13 @@ export const getClaimsfilteredTweets = async (req, res) => {
   const data = await extractClaimsFromTweetsfilteredTweets(req.body);
   res.send(data);
 };
-export const getClaimsfilteredTweetsRepeted = async (req, res) => {
-  const data = await RepetedClaims(req.body);
-  res.send(data);
+
+//---todo delete
+export const analyzeInfluencerA = async (req, res) => {
+  console.log(req.body);
+  res.send('analyzeInfluencer');
+};
+
+export const getInfluencerDetails = async (req, res) => {
+  res.send('getInfluencerDetails');
 };
