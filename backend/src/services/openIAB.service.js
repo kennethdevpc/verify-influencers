@@ -49,18 +49,20 @@ export async function filterHealthTweets(tweets) {
 export async function extractClaimsFromTweets(filteredTweets) {
   const claims = [];
   const promises = filteredTweets.map(async (tweet) => {
-    const prompt = `Analiza el siguiente tweet y realiza las siguientes tareas:
+    const prompt = `Analiza el siguiente tweet y realiza las siguientes tareas (responde todo en ingles):
     
     1. Extrae solo las afirmaciónes sobre salud de este tweet, que tu consideres relevantes , pero no repitas o hagas afirmaciones sin sentido: '${tweet.text}'. separalas con un "-", si no hay una frase no la agregues y tampoco coloques afirmaciones en blanco como afirmaciones. Si NO hay afirmaciones sobre salud en el tweet colocale "null" y no hagas los sigueintes pasos 2 y 3.
     2. ¿A qué categoría pertenece la siguiente afirmación: "${tweet.text}"? Las categorías disponibles son: Nutrición, Medicina, Salud Mental, Ejercicio. Responde solo con la categoría correspondiente.
     3. ¿Cuánta confianza tienes en esta afirmación: "${tweet.text}"? Responde con un puntaje entre 0 y 100 0 significa bajo, 100 mas alto, porfavor dame un dato numerico primero y luego la informacion que encuentras (solo 30 palabras maximo), por ejemplo:  80-La prevención de enfermedades a través de hábitos saludables, chequeos médicos regulares y vacunaciones es fundamental para mantener una buena salud
-    
+    4. ¿A qué estado de verificacion pertenece la siguiente afirmación: "${tweet.text}"? Los estados disponibles son: Verified, Questionable, Debunked. Responde solo con el estado correspondiente, y debe ser lo mas acertivo posible, se debe ser muy critico.
+     
     -Ejemplo de respuesta: evita colocar caracteres especiales, como /" u otras cosas, unicamentq usa el separador -
-    tambien modifica los textos en tercera persona, por ejemplo se sugiere, en vez e le sugiero.
+    tambien modifica los textos en tercera persona, por ejemplo se sugiere, en vez de le sugiero.
 
     "1. el deporte mejora la salud mental-El ejercicio te da energia en tus actividades",
     "2. Salud Mental",
-    "3. 85-El ejercicio regular está asociado con mejoras en la salud mental"
+    "3. 70-El ejercicio regular está asociado con mejoras en la salud mental"
+    "4. Questionable"
 
 
     `;

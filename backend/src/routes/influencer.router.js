@@ -10,7 +10,7 @@ import {
 const router = express.Router();
 
 router.post('/analyze', analyzeInfluencer); //--obtengo usuario y sus detalles Id y nombre
-router.post('/tweets', getUserTweetsFuncion); //--obtengo los tweets (100 maximo), de un usuario
+router.get('/tweets/:id', getUserTweetsFuncion); //--obtengo los tweets (100 maximo), de un usuario
 
 router.post('/healthTweets', getHealthTweets); //---filtra todo lo que tiene que ver son salu
 router.post('/claims', getClaims); //---Extrae todas las afirmaciones, es decir todos los textos, y genere una categoria y un score

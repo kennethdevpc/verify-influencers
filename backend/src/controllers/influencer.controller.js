@@ -37,8 +37,11 @@ export const analyzeInfluencer = async (req, res) => {
 };
 
 export const getUserTweetsFuncion = async (req, res) => {
+  // rew es un id: id
+  let id = req.params.id;
+
   try {
-    const data = await getUserTweets(req.body.id);
+    const data = await getUserTweets(id);
     res.send(data);
   } catch (error) {
     console.error('Error analyzing influencer:', error);
