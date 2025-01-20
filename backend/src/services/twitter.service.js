@@ -132,9 +132,9 @@ export async function getUserTweetsFormPostman(twwitsfiltered) {
       created_at: data.created_at,
     }));
     // Inserta todos los documentos usando `insertMany`
-    await DataTweet.insertMany(twwitsToDB);
+    const dataTweetInserted = await DataTweet.insertMany(twwitsToDB);
 
-    return twwitsfiltered;
+    return dataTweetInserted;
   } catch (error) {
     if (error.response && error.response.status === 429) {
       const retryAfter = error.response.headers['retry-after'];

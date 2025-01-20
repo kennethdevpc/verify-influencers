@@ -17,7 +17,7 @@ const DataTweetSchema = new mongoose.Schema(
       required: false,
     },
     created_at: {
-      type: String,
+      type: Date,
       required: false,
     },
   },
