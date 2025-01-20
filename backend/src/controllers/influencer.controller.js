@@ -3,13 +3,8 @@ import {
   extractClaimsFromTweets,
   extractClaimsFromTweetsfilteredTweets,
   filterHealthTweets,
-  RepetedClaims,
 } from '../services/openIAB.service.js';
-import {
-  filterOriginalTweets,
-  getUserTweets,
-  searchInfluencer,
-} from '../services/twitter.service.js';
+import { getUserTweets, searchInfluencer } from '../services/twitter.service.js';
 
 export const analyzeInfluencer = async (req, res) => {
   try {
