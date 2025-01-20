@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { TWITTER_BEARER_TOKEN } from '../config/apiKeys.js';
 import Influencer from '../models/Influencer.model.js';
-import e from 'express';
+import e, { text } from 'express';
+import DataTweet from '../models/DataTweet.model.js';
 
 const BASE_URL = 'https://api.x.com/2';
 
@@ -17,7 +18,7 @@ export async function searchInfluencer(usernameTexted) {
     } else {
       const userApi = await getUserByUsername(usernameTexted);
       if (!userApi) throw new Error('Usuario no encontrado');
-      const { id, name, username } = userApi; //--exist en api
+      const { id, name, username, profile_image_url, description, public_metrics } = userApi; //--exist en api
 
       const userInDB = await Influencer.findOne({ id });
       if (userInDB) {
@@ -27,6 +28,9 @@ export async function searchInfluencer(usernameTexted) {
           id,
           name,
           username,
+          profileImageUrl: profile_image_url,
+          description,
+          followers: public_metrics?.followers_count || 0,
         });
         if (newInflu) {
           // generate jwt token here
@@ -49,6 +53,9 @@ async function getUserByUsername(username) {
     const response = await axios.get(`${BASE_URL}/users/by/username/${userNameJoined}`, {
       headers: {
         Authorization: `Bearer ${TWITTER_BEARER_TOKEN}`,
+      },
+      params: {
+        'user.fields': 'profile_image_url,description,public_metrics', // Añadimos campos adicionales
       },
     });
     return response.data.data;
@@ -83,6 +90,15 @@ export async function getUserTweets(userId, maxResults = 100) {
     console.log('Response Data:', response.data);
 
     let twwitsfiltered = filterOriginalTweets(response.data.data);
+    //-----espacio para ejecutar el envio de los tweets a la base de datos
+
+    const twwitsToDB = twwitsfiltered.map((data) => ({
+      id: data.id,
+      InfluencerId: data.auth,
+      created_at,
+    }));
+    // Inserta todos los documentos usando `insertMany`
+    await DataTweet.insertMany(twwitsToDB);
 
     return twwitsfiltered;
   } catch (error) {
@@ -103,6 +119,33 @@ export function filterOriginalTweets(tweets) {
     const isRetweet = tweet.text.trim().startsWith('RT @');
     return !isReply && !isRetweet;
   });
+}
+
+//---test para obtenr teewts y agregarlos a la base de datos:
+// Obtener tweets de un usuario
+export async function getUserTweetsFormPostman(twwitsfiltered) {
+  try {
+    const twwitsToDB = twwitsfiltered.map((data) => ({
+      id: data.id,
+      text: data.text,
+      InfluencerId: data.author_id,
+      created_at: data.created_at,
+    }));
+    // Inserta todos los documentos usando `insertMany`
+    await DataTweet.insertMany(twwitsToDB);
+
+    return twwitsfiltered;
+  } catch (error) {
+    if (error.response && error.response.status === 429) {
+      const retryAfter = error.response.headers['retry-after'];
+      const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 30000; // Default to 30s
+      console.log(`Rate limit exceeded. Retrying after ${waitTime / 1000}s...`);
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
+      return getUserTweets(userId, maxResults); // Retry
+    } else {
+      throw error;
+    }
+  }
 }
 
 // //---test para obtener tweets

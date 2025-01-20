@@ -4,7 +4,11 @@ import {
   extractClaimsFromTweetsfilteredTweets,
   filterHealthTweets,
 } from '../services/openIAB.service.js';
-import { getUserTweets, searchInfluencer } from '../services/twitter.service.js';
+import {
+  getUserTweets,
+  getUserTweetsFormPostman,
+  searchInfluencer,
+} from '../services/twitter.service.js';
 
 export const analyzeInfluencer = async (req, res) => {
   try {
@@ -78,6 +82,13 @@ export const getClaimsfilteredTweets = async (req, res) => {
 };
 
 //---todo delete
+export const insertTweetsIndB = async (req, res) => {
+  try {
+    const dataFromPostman = await getUserTweetsFormPostman(req.body);
+    console.log(dataFromPostman);
+    res.send(dataFromPostman);
+  } catch (error) {}
+};
 export const analyzeInfluencerA = async (req, res) => {
   console.log(req.body);
   res.send('analyzeInfluencer');

@@ -1,30 +1,22 @@
 import mongoose from 'mongoose';
 
-const InfluencerSchema = new mongoose.Schema(
+const DataTweetSchema = new mongoose.Schema(
   {
     id: {
       type: String,
       required: false,
       unique: false,
     },
-    name: {
+    InfluencerId: {
       type: String,
       required: false,
       unique: false,
     },
-    username: {
+    text: {
       type: String,
       required: false,
     },
-    profileImageUrl: {
-      type: String,
-      required: false,
-    },
-    description: {
-      type: String,
-      required: false,
-    },
-    followers: {
+    created_at: {
       type: String,
       required: false,
     },
@@ -32,6 +24,6 @@ const InfluencerSchema = new mongoose.Schema(
   { timestamps: true }
 );
 //------el modelo se crea en singular siempre y con la primera letra mayuscula, por ejemplo Influencer para Influencers
-const Influencer = mongoose.model('Influencer', InfluencerSchema);
+const DataTweet = mongoose.model('DataTweet', DataTweetSchema);
 
-export default Influencer;
+export default DataTweet;
