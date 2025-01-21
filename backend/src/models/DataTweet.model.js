@@ -3,21 +3,42 @@ import mongoose from 'mongoose';
 const DataTweetSchema = new mongoose.Schema(
   {
     id: {
+      //---Id del tweet
+      type: String,
+      required: true,
+      unique: true,
+    },
+    influencerId: {
       type: String,
       required: false,
       unique: false,
     },
-    InfluencerId: {
-      type: String,
+    created_at: {
+      type: Date,
       required: false,
-      unique: false,
     },
     text: {
       type: String,
       required: false,
     },
-    created_at: {
-      type: Date,
+    claimsRaw: {
+      type: String,
+      required: false,
+    },
+    categoryType: {
+      type: String,
+      required: false,
+    },
+    cleanedPhrase: {
+      type: String,
+      required: false,
+    },
+    statusAnalysis: {
+      type: String,
+      required: false,
+    },
+    lines: {
+      type: Array,
       required: false,
     },
   },

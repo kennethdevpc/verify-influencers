@@ -2,7 +2,6 @@ import axios from 'axios';
 import { TWITTER_BEARER_TOKEN } from '../config/apiKeys.js';
 import Influencer from '../models/Influencer.model.js';
 import e, { text } from 'express';
-import DataTweet from '../models/DataTweet.model.js';
 
 const BASE_URL = 'https://api.x.com/2';
 
@@ -119,33 +118,6 @@ export function filterOriginalTweets(tweets) {
     const isRetweet = tweet.text.trim().startsWith('RT @');
     return !isReply && !isRetweet;
   });
-}
-
-//---test para obtenr teewts y agregarlos a la base de datos:
-// Obtener tweets de un usuario
-export async function getUserTweetsFormPostman(twwitsfiltered) {
-  try {
-    const twwitsToDB = twwitsfiltered.map((data) => ({
-      id: data.id,
-      text: data.text,
-      InfluencerId: data.author_id,
-      created_at: data.created_at,
-    }));
-    // Inserta todos los documentos usando `insertMany`
-    const dataTweetInserted = await DataTweet.insertMany(twwitsToDB);
-
-    return dataTweetInserted;
-  } catch (error) {
-    if (error.response && error.response.status === 429) {
-      const retryAfter = error.response.headers['retry-after'];
-      const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 30000; // Default to 30s
-      console.log(`Rate limit exceeded. Retrying after ${waitTime / 1000}s...`);
-      await new Promise((resolve) => setTimeout(resolve, waitTime));
-      return getUserTweets(userId, maxResults); // Retry
-    } else {
-      throw error;
-    }
-  }
 }
 
 // //---test para obtener tweets

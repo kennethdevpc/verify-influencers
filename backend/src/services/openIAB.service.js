@@ -1,6 +1,7 @@
 import OpenAI from 'openai'; // Nueva versión del SDK
 import dotenv from 'dotenv'; //----dotenv
-import { text } from 'express';
+import DataTweet from '../models/DataTweet.model.js';
+
 dotenv.config();
 // Configuración de OpenAI con tu clave de API
 const openai = new OpenAI({
@@ -50,7 +51,7 @@ export async function filterHealthTweets(tweets) {
 export async function extractClaimsFromTweets(filteredTweets) {
   const claims = [];
   const promises = filteredTweets.map(async (tweet) => {
-    const prompt = `Analiza el siguiente tweet y realiza las siguientes tareas (responde todo en ingles):
+    const prompt = `Analiza el siguiente tweet y realiza las siguientes tareas (responde todo en ingles, es muy importante traducir al ingles):
     
     1. Extrae solo las afirmaciónes sobre salud de este tweet, que tu consideres relevantes , pero no repitas o hagas afirmaciones sin sentido: '${tweet.text}'. separalas con un "|", si no hay una frase no la agregues y tampoco coloques afirmaciones en blanco como afirmaciones. Si NO hay afirmaciones sobre salud en el tweet colocale "null" y no hagas los sigueintes pasos 2 y 3.
     2. ¿A qué categoría pertenece la siguiente afirmación: "${tweet.text}"? Las categorías disponibles son: Nutrición, Medicina, Salud Mental, Ejercicio. Responde solo con la categoría correspondiente.
@@ -82,6 +83,10 @@ export async function extractClaimsFromTweets(filteredTweets) {
         influencerId: tweet.author_id,
         created_at: tweet.created_at,
         text: tweet.text,
+        claimsRaw: lines[0].replace(/^\d+\.\s*/, '').trim(),
+        categoryType: lines[1].replace(/^\d+\.\s*/, '').trim(),
+        cleanedPhrase: lines[2].replace(/^\d+\.\s*/, '').trim(),
+        statusAnalysis: lines[3].replace(/^\d+\.\s*/, '').trim(),
         lines,
       };
 
@@ -229,4 +234,68 @@ export async function RepetedClaims(texts) {
     }
   }
   return healthTweets;
+}
+
+//---test para obtenr teewts y agregarlos a la base de datos:
+// Obtener tweets de un usuario
+export async function getUserTweetsFormPostman(twwitsfiltered) {
+  try {
+    const twwitsToDB = twwitsfiltered.map((data) => ({
+      id: data.id,
+      influencerId: data.influencerId,
+      created_at: data.created_at,
+      text: data.text,
+      claimsRaw: data.claimsRaw,
+      categoryType: data.categoryType,
+      cleanedPhrase: data.cleanedPhrase,
+      statusAnalysis: data.statusAnalysis,
+      lines: data.lines,
+    }));
+    // Inserta todos los documentos usando `insertMany`
+    // const dataTweetInserted = await DataTweet.insertMany(twwitsToDB);
+    let dataTweetInserted;
+    try {
+      // Obtener solo los IDs de los documentos que se van a insertar
+      const ids = twwitsfiltered.map((data) => data.id);
+
+      // Buscar en la base de datos los IDs que ya existen
+      const existingDocs = await DataTweet.find({ id: { $in: ids } });
+
+      const existingIds = new Set(existingDocs.map((doc) => doc.id)); // Crear un Set con los IDs existentes, por ejemplo { '123': true, '456': true }
+
+      // Filtrar los documentos que ya existen
+      let twwitsToDB = twwitsfiltered.filter((data) => !existingIds.has(data.id));
+
+      //---filtor por si se entrega el mismo id en la misma peticion
+      const uniqueDocs = new Map();
+      twwitsToDB = twwitsToDB.filter((data) => {
+        if (uniqueDocs.has(data.id)) {
+          return false;
+        } else {
+          uniqueDocs.set(data.id, true);
+          return true;
+        }
+      });
+
+      if (twwitsToDB.length > 0) {
+        dataTweetInserted = await DataTweet.insertMany(twwitsToDB);
+        return { success: true, data: dataTweetInserted };
+      } else {
+        return { success: false, message: 'teweets already inserted' };
+      }
+    } catch (error) {
+      console.error('Error al insertar documentos:', error);
+      return { success: false, message: 'Error  in the server', error: error.message };
+    }
+  } catch (error) {
+    if (error.response && error.response.status === 429) {
+      const retryAfter = error.response.headers['retry-after'];
+      const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 30000; // Default to 30s
+      console.log(`Rate limit exceeded. Retrying after ${waitTime / 1000}s...`);
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
+      return getUserTweets(userId, maxResults); // Retry
+    } else {
+      throw error;
+    }
+  }
 }
