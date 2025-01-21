@@ -79,7 +79,7 @@ async function getUserByUsername(username) {
   }
 }
 // Obtener tweets de un usuario
-export async function getUserTweets(userId, maxResults = 100) {
+export async function getUserTweetsoriginal(userId, maxResults = 100) {
   try {
     const response = await axios.get(`${BASE_URL}/users/${userId}/tweets`, {
       headers: {
@@ -129,7 +129,44 @@ export function filterOriginalTweets(tweets) {
     return !isReply && !isRetweet;
   });
 }
+//-----------test getusertweets
 
+// Obtener tweets de un usuario
+export async function getUserTweets(data, maxResults = 100) {
+  try {
+    // const response = await axios.get(`${BASE_URL}/users/${userId}/tweets`, {
+    //   headers: {
+    //     Authorization: `Bearer ${TWITTER_BEARER_TOKEN}`,
+    //   },
+    //   params: {
+    //     max_results: maxResults,
+    //     'tweet.fields': 'created_at,public_metrics',
+    //     expansions: 'author_id',
+    //     'user.fields': 'username,public_metrics',
+    //     // exclude: 'replies,retweets',
+    //   },
+    //   timeout: 10000, // Timeout en milisegundos (10 segundos)
+    // });
+    // console.log('Response Data:', response.data);
+
+    // let twwitsfiltered = filterOriginalTweets(response.data.data);
+    let twwitsfiltered = filterOriginalTweets(data);
+
+    return twwitsfiltered;
+  } catch (error) {
+    if (error.response && error.response.status === 429) {
+      throw {
+        success: false,
+        message: 'Error too many requests, change your Tweeter API keys',
+        error: error.message,
+        errorStatus: error?.status,
+        errorCode: error?.code,
+      };
+    } else {
+      throw error;
+    }
+  }
+}
 // //---test para obtener tweets
 // export async function getUserTweets2(userId, maxResults = 100) {
 //   try {

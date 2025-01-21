@@ -64,6 +64,26 @@ export const getClaimsfilteredTweets = async (req, res) => {
 };
 
 //---todo delete
+
+export const getUserTweetsFuncionDelete = async (req, res) => {
+  let dataBody = req.body;
+  try {
+    const data = await getUserTweets(dataBody);
+    console.log('------------', data[0]);
+    //----healthTweets
+    const healthTweets = await filterHealthTweets(data);
+    const tweetsDb = await addTweetsToDB(healthTweets);
+    console.log('------------', 'healthTweets');
+
+    //----claims
+    //---- tweetsDb
+
+    res.send(tweetsDb);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+};
+
 export const insertTweetsIndB = async (req, res) => {
   try {
     const dataFromPostman = await addTweetsToDB(req.body);

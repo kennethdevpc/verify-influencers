@@ -42,6 +42,9 @@ export async function filterHealthTweets(tweets) {
 
   const results = await Promise.all(promises);
 
+  //---claims
+  return extractClaimsFromTweets(results.filter((tweet) => tweet !== null));
+
   // Filtra los resultados para eliminar los "null" (errores o respuestas negativas)
   return results.filter((tweet) => tweet !== null);
 
@@ -238,6 +241,7 @@ export async function RepetedClaims(texts) {
 
 //---test para obtenr teewts y agregarlos a la base de datos:
 // Obtener tweets de un usuario
+
 export async function addTweetsToDB(twwitsfiltered) {
   try {
     const twwitsToDB = twwitsfiltered.map((data) => ({
