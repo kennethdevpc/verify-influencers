@@ -1,5 +1,6 @@
 import OpenAI from 'openai'; // Nueva versión del SDK
 import dotenv from 'dotenv'; //----dotenv
+import { text } from 'express';
 dotenv.config();
 // Configuración de OpenAI con tu clave de API
 const openai = new OpenAI({
@@ -75,7 +76,16 @@ export async function extractClaimsFromTweets(filteredTweets) {
 
       // Parsear las respuestas
       const lines = response.choices[0].message.content.trim().split('\n');
-      return lines;
+
+      let teetComplete = {
+        id: tweet.id,
+        influencerId: tweet.author_id,
+        created_at: tweet.created_at,
+        text: tweet.text,
+        lines,
+      };
+
+      return teetComplete;
     } catch (error) {
       throw {
         success: false,
@@ -103,7 +113,8 @@ export async function extractClaimsFromTweets(filteredTweets) {
 export async function extractClaimsFromTweetsfilteredTweets(lines) {
   let claims = [];
 
-  const parsedLines = lines.map((entry) => {
+  const parsedLines = lines.map((e) => {
+    let entry = e.lines;
     // Extraer las frases de la "claim"
     if (Array.isArray(entry) && entry.length > 1) {
       // Limpiar el prefijo de números seguidos de un punto en entry[1]
