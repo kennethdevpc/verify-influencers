@@ -238,7 +238,7 @@ export async function RepetedClaims(texts) {
 
 //---test para obtenr teewts y agregarlos a la base de datos:
 // Obtener tweets de un usuario
-export async function getUserTweetsFormPostman(twwitsfiltered) {
+export async function addTweetsToDB(twwitsfiltered) {
   try {
     const twwitsToDB = twwitsfiltered.map((data) => ({
       id: data.id,
