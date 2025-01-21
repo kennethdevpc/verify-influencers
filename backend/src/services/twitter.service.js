@@ -60,11 +60,19 @@ async function getUserByUsername(username) {
     return response.data.data;
   } catch (error) {
     if (error.response && error.response.status === 429) {
-      const retryAfter = error.response.headers['retry-after'];
-      const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 30000; // Por defecto 30s
-      console.log(`Rate limit exceeded. Retrying after ${waitTime / 1000}s...`);
-      await new Promise((resolve) => setTimeout(resolve, waitTime));
-      return getUserByUsername(username); // Reintento
+      throw {
+        success: false,
+        message: 'Error too many requests, change your Tweeter API keys',
+        error: error.message,
+        errorStatus: error?.status,
+        errorCode: error?.code,
+      };
+
+      // const retryAfter = error.response.headers['retry-after'];
+      // const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 30000; // Por defecto 30s
+      // console.log(`Rate limit exceeded. Retrying after ${waitTime / 1000}s...`);
+      // await new Promise((resolve) => setTimeout(resolve, waitTime));
+      // return getUserByUsername(username); // Reintento
     } else {
       throw error;
     }
@@ -102,11 +110,13 @@ export async function getUserTweets(userId, maxResults = 100) {
     return twwitsfiltered;
   } catch (error) {
     if (error.response && error.response.status === 429) {
-      const retryAfter = error.response.headers['retry-after'];
-      const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 30000; // Default to 30s
-      console.log(`Rate limit exceeded. Retrying after ${waitTime / 1000}s...`);
-      await new Promise((resolve) => setTimeout(resolve, waitTime));
-      return getUserTweets(userId, maxResults); // Retry
+      throw {
+        success: false,
+        message: 'Error too many requests, change your Tweeter API keys',
+        error: error.message,
+        errorStatus: error?.status,
+        errorCode: error?.code,
+      };
     } else {
       throw error;
     }

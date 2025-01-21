@@ -22,32 +22,17 @@ export const analyzeInfluencer = async (req, res) => {
     });
   } catch (error) {
     console.error('Error analyzing influencer:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error analyzing influencer, please review credentials, and keysfor the Tweeter API',
-      error: error.message,
-      errorStatus: error.response?.status,
-      errorDetails: error.response?.data?.detail,
-    });
+    res.status(500).json(error);
   }
 };
 
 export const getUserTweetsFuncion = async (req, res) => {
-  // rew es un id: id
   let id = req.params.id;
-
   try {
     const data = await getUserTweets(id);
     res.send(data);
   } catch (error) {
-    console.error('Error analyzing influencer:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error analyzing influencer, please review credentials, and keysfor the Tweeter API',
-      error: error.message,
-      errorStatus: error.response?.status,
-      errorDetails: error.response?.data?.detail,
-    });
+    res.status(500).json(error);
   }
 };
 
