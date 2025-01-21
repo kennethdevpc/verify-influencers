@@ -35,8 +35,6 @@ export async function filterHealthTweets(tweets) {
 
         errorCode: error.error?.code,
       };
-
-      return error;
     }
   });
 
@@ -47,8 +45,6 @@ export async function filterHealthTweets(tweets) {
 
   // Filtra los resultados para eliminar los "null" (errores o respuestas negativas)
   return results.filter((tweet) => tweet !== null);
-
-  return healthTweets;
 }
 
 export async function extractClaimsFromTweets(filteredTweets) {
@@ -156,11 +152,7 @@ export async function extractClaimsFromTweetsfilteredTweets(lines) {
       return ''; // O algún valor por defecto apropiado
     }
   });
-  // return parsedLines;
-  // return RepetedClaims(claims);
   return RepetedClaims(parsedLines);
-
-  return claims;
 }
 
 export async function RepetedClaims(texts) {
@@ -200,8 +192,6 @@ export async function RepetedClaims(texts) {
 
         errorCode: error.error?.code,
       };
-
-      // throw error;
     }
   }
 
