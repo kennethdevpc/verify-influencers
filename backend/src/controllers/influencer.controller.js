@@ -67,9 +67,6 @@ export const getUserTweetsFuncionDelete = async (req, res) => {
   let dataBody = req.body;
   try {
     const data = await getUserTweets(dataBody);
-    //----healthTweets
-    // const healthTweets = await filterHealthTweets(data);
-    //-------inicio codifo 22enero
     const healthTweets = await filterHealthTweets(data);
     console.log('healthTweets', healthTweets.success);
     if (healthTweets.success) {
@@ -79,26 +76,6 @@ export const getUserTweetsFuncionDelete = async (req, res) => {
     } else {
       res.send(healthTweets);
     }
-
-    // if (healthTweets.success == 'true') {
-    //   // const tweetsDb = await addTweetsToDB(healthTweets);
-    //   console.log('tweetsDb------', tweetsDb);
-    //   res.send(healthTweets);
-    //   // res.send(healthTweets);
-    // } else {
-    //   res.send(healthTweets);
-    // }
-
-    //----como estaba
-    // const healthTweets = await filterHealthTweets(data);
-
-    // const tweetsDb = await addTweetsToDB(healthTweets);
-    // console.log('------------', 'healthTweets');
-
-    // //----claims
-    // //---- tweetsDb
-
-    // res.send(tweetsDb);
   } catch (error) {
     res.status(500).json(error);
   }

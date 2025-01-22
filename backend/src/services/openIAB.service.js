@@ -55,7 +55,7 @@ export async function filterHealthTweets(tweets) {
       message: claimsFromTweets,
     };
   } else {
-    return { success: false, message: 'teweets already inserted' };
+    return { success: false, message: 'teweets already inserted indb' };
   }
 
   // Filtra los resultados para eliminar los "null" (errores o respuestas negativas)
