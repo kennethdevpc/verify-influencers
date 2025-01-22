@@ -4,6 +4,7 @@ import {
   extractClaimsFromTweetsfilteredTweets,
   filterHealthTweets,
   addTweetsToDB,
+  getAllTweets,
 } from '../services/openIAB.service.js';
 import { getUserTweets, searchInfluencer } from '../services/twitter.service.js';
 
@@ -68,13 +69,16 @@ export const getUserTweetsFuncionDelete = async (req, res) => {
   try {
     const data = await getUserTweets(dataBody);
     const healthTweets = await filterHealthTweets(data);
-    console.log('healthTweets', healthTweets.success);
     if (healthTweets.success) {
       const claimsFromTweets = await healthTweets.message;
       const tweetsDb = await addTweetsToDB(claimsFromTweets);
-      res.send(tweetsDb);
+      // res.send(tweetsDb);
+      const tweets = await getAllTweets();
+      res.status(200).json(tweets);
     } else {
-      res.send(healthTweets);
+      // res.send(healthTweets);
+      const tweets = await getAllTweets();
+      res.status(200).json(tweets);
     }
   } catch (error) {
     res.status(500).json(error);

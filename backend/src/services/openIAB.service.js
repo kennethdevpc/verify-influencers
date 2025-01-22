@@ -62,6 +62,17 @@ export async function filterHealthTweets(tweets) {
   return results.filter((tweet) => tweet !== null);
 }
 //-------code 22 enero
+// Función para obtener todos los tweets
+export async function getAllTweets() {
+  try {
+    const tweets = await DataTweet.find({});
+    return tweets;
+  } catch (error) {
+    console.error('Error fetching tweets:', error);
+    throw error;
+  }
+}
+
 async function verificacionDataIndb(twwitsfiltered) {
   try {
     try {
