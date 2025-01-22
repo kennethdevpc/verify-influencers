@@ -70,6 +70,7 @@ export const getUserTweetsFuncion = async (req, res) => {
 //---todo delete
 
 export const getUserTweetsFuncionDelete = async (req, res) => {
+  // let dataBody = req.params.id;
   let dataBody = req.body;
   try {
     const data = await getUserTweets(dataBody);

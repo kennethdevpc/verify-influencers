@@ -67,12 +67,14 @@ async function getUserByUsername(username) {
         errorStatus: error?.status,
         errorCode: error?.code,
       };
-
-      // const retryAfter = error.response.headers['retry-after'];
-      // const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 30000; // Por defecto 30s
-      // console.log(`Rate limit exceeded. Retrying after ${waitTime / 1000}s...`);
-      // await new Promise((resolve) => setTimeout(resolve, waitTime));
-      // return getUserByUsername(username); // Reintento
+    } else if (error.response && error.response.status === 401) {
+      throw {
+        success: false,
+        message: 'Unauthorized: Check your Bearer Token',
+        error: error.message,
+        errorStatus: error?.status,
+        errorCode: error?.code,
+      };
     } else {
       throw error;
     }
@@ -80,6 +82,8 @@ async function getUserByUsername(username) {
 }
 // Obtener tweets de un usuario
 export async function getUserTweetsoriginal(userId, maxResults = 100) {
+  console.log('-----------Response Data:', userId);
+
   try {
     const response = await axios.get(`${BASE_URL}/users/${userId}/tweets`, {
       headers: {
@@ -94,7 +98,7 @@ export async function getUserTweetsoriginal(userId, maxResults = 100) {
       },
       timeout: 10000, // Timeout en milisegundos (10 segundos)
     });
-    console.log('Response Data:', response.data);
+    console.log('-----------Response Data:', response.data);
 
     let twwitsfiltered = filterOriginalTweets(response.data.data);
     //-----espacio para ejecutar el envio de los tweets a la base de datos
@@ -117,6 +121,14 @@ export async function getUserTweetsoriginal(userId, maxResults = 100) {
         errorStatus: error?.status,
         errorCode: error?.code,
       };
+    } else if (error.response && error.response.status === 401) {
+      throw {
+        success: false,
+        message: 'Unauthorized: Check your Bearer Token',
+        error: error.message,
+        errorStatus: error?.status,
+        errorCode: error?.code,
+      };
     } else {
       throw error;
     }
@@ -134,7 +146,8 @@ export function filterOriginalTweets(tweets) {
 // Obtener tweets de un usuario
 export async function getUserTweets(data, maxResults = 100) {
   try {
-    // const response = await axios.get(`${BASE_URL}/users/${userId}/tweets`, {
+    // console.log('Response Data:', data);
+    // const response = await axios.get(`${BASE_URL}/users/${data}/tweets`, {
     //   headers: {
     //     Authorization: `Bearer ${TWITTER_BEARER_TOKEN}`,
     //   },
@@ -150,6 +163,7 @@ export async function getUserTweets(data, maxResults = 100) {
     // console.log('Response Data:', response.data);
 
     // let twwitsfiltered = filterOriginalTweets(response.data.data);
+
     let twwitsfiltered = filterOriginalTweets(data);
 
     return twwitsfiltered;
@@ -158,6 +172,14 @@ export async function getUserTweets(data, maxResults = 100) {
       throw {
         success: false,
         message: 'Error too many requests, change your Tweeter API keys',
+        error: error.message,
+        errorStatus: error?.status,
+        errorCode: error?.code,
+      };
+    } else if (error.response && error.response.status === 401) {
+      throw {
+        success: false,
+        message: 'Unauthorized: Check your Bearer Token',
         error: error.message,
         errorStatus: error?.status,
         errorCode: error?.code,
