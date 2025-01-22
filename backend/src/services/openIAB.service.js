@@ -41,10 +41,72 @@ export async function filterHealthTweets(tweets) {
   const results = await Promise.all(promises);
 
   //---claims
-  return extractClaimsFromTweets(results.filter((tweet) => tweet !== null));
+  //return extractClaimsFromTweets(results.filter((tweet) => tweet !== null));
+  //--inicio cod 22 enero
+
+  let newTeewts = await verificacionDataIndb(results.filter((tweet) => tweet !== null));
+
+  if (newTeewts) {
+    const claimsFromTweets = await extractClaimsFromTweets(
+      results.filter((tweet) => tweet !== null)
+    );
+    return {
+      success: true,
+      message: claimsFromTweets,
+    };
+  } else {
+    return { success: false, message: 'teweets already inserted' };
+  }
 
   // Filtra los resultados para eliminar los "null" (errores o respuestas negativas)
   return results.filter((tweet) => tweet !== null);
+}
+//-------code 22 enero
+async function verificacionDataIndb(twwitsfiltered) {
+  try {
+    try {
+      // Obtener solo los IDs de los documentos que se van a insertar
+      const ids = twwitsfiltered.map((data) => data.id);
+
+      // Buscar en la base de datos los IDs que ya existen
+      const existingDocs = await DataTweet.find({ id: { $in: ids } });
+
+      const existingIds = new Set(existingDocs.map((doc) => doc.id)); // Crear un Set con los IDs existentes, por ejemplo { '123': true, '456': true }
+
+      // Filtrar los documentos que ya existen
+      let twwitsToDB = twwitsfiltered.filter((data) => !existingIds.has(data.id));
+
+      //---filtor por si se entrega el mismo id en la misma peticion
+      const uniqueDocs = new Map();
+      twwitsToDB = twwitsToDB.filter((data) => {
+        if (uniqueDocs.has(data.id)) {
+          return false;
+        } else {
+          uniqueDocs.set(data.id, true);
+          return true;
+        }
+      });
+
+      if (twwitsToDB.length > 0) {
+        return true; //---si hay datos nuevos
+      } else {
+        return false; //----no hay datos nuevos
+      }
+    } catch (error) {
+      console.error('Error al insertar documentos:', error);
+      return { success: false, message: 'Error  in the server', error: error.message };
+    }
+  } catch (error) {
+    if (error.response && error.response.status === 429) {
+      const retryAfter = error.response.headers['retry-after'];
+      const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 30000; // Default to 30s
+      console.log(`Rate limit exceeded. Retrying after ${waitTime / 1000}s...`);
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
+      return getUserTweets(userId, maxResults); // Retry
+    } else {
+      throw error;
+    }
+  }
 }
 
 export async function extractClaimsFromTweets(filteredTweets) {
@@ -233,6 +295,7 @@ export async function RepetedClaims(texts) {
 // Obtener tweets de un usuario
 
 export async function addTweetsToDB(twwitsfiltered) {
+  console.log('twwitsfiltered', twwitsfiltered[0]);
   try {
     const twwitsToDB = twwitsfiltered.map((data) => ({
       id: data.id,

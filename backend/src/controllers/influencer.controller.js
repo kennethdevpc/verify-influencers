@@ -26,16 +26,6 @@ export const analyzeInfluencer = async (req, res) => {
   }
 };
 
-export const getUserTweetsFuncion = async (req, res) => {
-  let id = req.params.id;
-  try {
-    const data = await getUserTweets(id);
-    res.send(data);
-  } catch (error) {
-    res.status(500).json(error);
-  }
-};
-
 export const getHealthTweets = async (req, res) => {
   try {
     const data = await filterHealthTweets(req.body);
@@ -62,23 +52,53 @@ export const getClaimsfilteredTweets = async (req, res) => {
     res.status(500).json(error);
   }
 };
-
+export const getUserTweetsFuncion = async (req, res) => {
+  let id = req.params.id;
+  try {
+    const data = await getUserTweets(id);
+    res.send(data);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+};
 //---todo delete
 
 export const getUserTweetsFuncionDelete = async (req, res) => {
   let dataBody = req.body;
   try {
     const data = await getUserTweets(dataBody);
-    console.log('------------', data[0]);
     //----healthTweets
+    // const healthTweets = await filterHealthTweets(data);
+    //-------inicio codifo 22enero
     const healthTweets = await filterHealthTweets(data);
-    const tweetsDb = await addTweetsToDB(healthTweets);
-    console.log('------------', 'healthTweets');
+    console.log('healthTweets', healthTweets.success);
+    if (healthTweets.success) {
+      const claimsFromTweets = await healthTweets.message;
+      const tweetsDb = await addTweetsToDB(claimsFromTweets);
+      res.send(tweetsDb);
+    } else {
+      res.send(healthTweets);
+    }
 
-    //----claims
-    //---- tweetsDb
+    // if (healthTweets.success == 'true') {
+    //   // const tweetsDb = await addTweetsToDB(healthTweets);
+    //   console.log('tweetsDb------', tweetsDb);
+    //   res.send(healthTweets);
+    //   // res.send(healthTweets);
+    // } else {
+    //   res.send(healthTweets);
+    // }
 
-    res.send(tweetsDb);
+    //----como estaba
+    // const healthTweets = await filterHealthTweets(data);
+
+    // const tweetsDb = await addTweetsToDB(healthTweets);
+    // console.log('------------', 'healthTweets');
+
+    // //----claims
+    // //---- tweetsDb
+
+    // res.send(tweetsDb);
   } catch (error) {
     res.status(500).json(error);
   }
