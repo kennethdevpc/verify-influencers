@@ -228,7 +228,75 @@ export async function extractClaimsFromTweetsfilteredTweets(lines) {
   return RepetedClaims(parsedLines);
 }
 
-export async function RepetedClaims(texts) {
+//---test para obtenr teewts y agregarlos a la base de datos:
+// Obtener tweets de un usuario
+
+export async function addTweetsToDB(twwitsfiltered) {
+  console.log('twwitsfiltered', twwitsfiltered[0]);
+  try {
+    const twwitsToDB = twwitsfiltered.map((data) => ({
+      id: data.id,
+      influencerId: data.influencerId,
+      created_at: data.created_at,
+      text: data.text,
+      claimsRaw: data.claimsRaw,
+      categoryType: data.categoryType,
+      cleanedPhrase: data.cleanedPhrase,
+      statusAnalysis: data.statusAnalysis,
+      lines: data.lines,
+    }));
+    // Inserta todos los documentos usando `insertMany`
+    // const dataTweetInserted = await DataTweet.insertMany(twwitsToDB);
+    let dataTweetInserted;
+    try {
+      // Obtener solo los IDs de los documentos que se van a insertar
+      const ids = twwitsfiltered.map((data) => data.id);
+
+      // Buscar en la base de datos los IDs que ya existen
+      const existingDocs = await DataTweet.find({ id: { $in: ids } });
+
+      const existingIds = new Set(existingDocs.map((doc) => doc.id)); // Crear un Set con los IDs existentes, por ejemplo { '123': true, '456': true }
+
+      // Filtrar los documentos que ya existen
+      let twwitsToDB = twwitsfiltered.filter((data) => !existingIds.has(data.id));
+
+      //---filtor por si se entrega el mismo id en la misma peticion
+      const uniqueDocs = new Map();
+      twwitsToDB = twwitsToDB.filter((data) => {
+        if (uniqueDocs.has(data.id)) {
+          return false;
+        } else {
+          uniqueDocs.set(data.id, true);
+          return true;
+        }
+      });
+
+      let twwitsToDBnotrepited = await RepetedClaims(twwitsToDB);
+
+      if (twwitsToDB.length > 0) {
+        dataTweetInserted = await DataTweet.insertMany(twwitsToDBnotrepited);
+        return { success: true, data: dataTweetInserted };
+      } else {
+        return { success: false, message: 'teweets already inserted' };
+      }
+    } catch (error) {
+      console.error('Error al insertar documentos:', error);
+      return { success: false, message: 'Error  in the server', error: error.message };
+    }
+  } catch (error) {
+    if (error.response && error.response.status === 429) {
+      const retryAfter = error.response.headers['retry-after'];
+      const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 30000; // Default to 30s
+      console.log(`Rate limit exceeded. Retrying after ${waitTime / 1000}s...`);
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
+      return getUserTweets(userId, maxResults); // Retry
+    } else {
+      throw error;
+    }
+  }
+}
+
+export async function RepetedClaimsOriginal(texts) {
   const healthTweets = [];
   const seenTexts = new Set();
 
@@ -301,69 +369,59 @@ export async function RepetedClaims(texts) {
   }
   return healthTweets;
 }
+//----code cambiado 22 enero
+export async function RepetedClaims(texts) {
+  const healthTweets = [];
 
-//---test para obtenr teewts y agregarlos a la base de datos:
-// Obtener tweets de un usuario
+  async function areTweetsSimilarDeep(tweet1, tweet2) {
+    // const prompt = `¿Los siguientes dos tweets tienen un significado similar?\nTweet 1: "${tweet1}"\nTweet 2: "${tweet2}"\nResponde "sí" o "no" pero sin puntos ni comas.`;
+    const prompt = `¿Los siguientes dos tweets tienen un significado similar? tweet 1:"${tweet1}" teweet 2: "${tweet2}"\nResponde "sí" o "no", si se parecen , o son similares, pero sin puntos ni comas.`;
 
-export async function addTweetsToDB(twwitsfiltered) {
-  console.log('twwitsfiltered', twwitsfiltered[0]);
-  try {
-    const twwitsToDB = twwitsfiltered.map((data) => ({
-      id: data.id,
-      influencerId: data.influencerId,
-      created_at: data.created_at,
-      text: data.text,
-      claimsRaw: data.claimsRaw,
-      categoryType: data.categoryType,
-      cleanedPhrase: data.cleanedPhrase,
-      statusAnalysis: data.statusAnalysis,
-      lines: data.lines,
-    }));
-    // Inserta todos los documentos usando `insertMany`
-    // const dataTweetInserted = await DataTweet.insertMany(twwitsToDB);
-    let dataTweetInserted;
     try {
-      // Obtener solo los IDs de los documentos que se van a insertar
-      const ids = twwitsfiltered.map((data) => data.id);
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: prompt }],
+      });
+      const answer = response.choices[0].message.content.trim().toLowerCase();
+      return answer === 'sí';
+    } catch (error) {
+      throw {
+        success: false,
+        message:
+          'Error analyzing Api open IA, please review credentials, and keysfor the OpenIA API',
+        error: error.message,
+        errorStatus: error?.status,
 
-      // Buscar en la base de datos los IDs que ya existen
-      const existingDocs = await DataTweet.find({ id: { $in: ids } });
+        errorCode: error.error?.code,
+      };
+    }
+  }
 
-      const existingIds = new Set(existingDocs.map((doc) => doc.id)); // Crear un Set con los IDs existentes, por ejemplo { '123': true, '456': true }
+  for (const tweetInfo of texts) {
+    let tweet = tweetInfo.claimsRaw;
 
-      // Filtrar los documentos que ya existen
-      let twwitsToDB = twwitsfiltered.filter((data) => !existingIds.has(data.id));
+    try {
+      let isDuplicate = false;
 
-      //---filtor por si se entrega el mismo id en la misma peticion
-      const uniqueDocs = new Map();
-      twwitsToDB = twwitsToDB.filter((data) => {
-        if (uniqueDocs.has(data.id)) {
-          return false;
-        } else {
-          uniqueDocs.set(data.id, true);
-          return true;
+      const deepCheckPromises = healthTweets.map((existingTweet) => {
+        if (existingTweet) {
+          return areTweetsSimilarDeep(existingTweet.claimsRaw, tweet);
         }
       });
 
-      if (twwitsToDB.length > 0) {
-        dataTweetInserted = await DataTweet.insertMany(twwitsToDB);
-        return { success: true, data: dataTweetInserted };
-      } else {
-        return { success: false, message: 'teweets already inserted' };
+      const results = await Promise.all(deepCheckPromises);
+
+      if (results.some((result) => result)) {
+        isDuplicate = true;
+      }
+
+      if (!isDuplicate) {
+        healthTweets.push(tweetInfo);
       }
     } catch (error) {
-      console.error('Error al insertar documentos:', error);
-      return { success: false, message: 'Error  in the server', error: error.message };
-    }
-  } catch (error) {
-    if (error.response && error.response.status === 429) {
-      const retryAfter = error.response.headers['retry-after'];
-      const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 30000; // Default to 30s
-      console.log(`Rate limit exceeded. Retrying after ${waitTime / 1000}s...`);
-      await new Promise((resolve) => setTimeout(resolve, waitTime));
-      return getUserTweets(userId, maxResults); // Retry
-    } else {
-      throw error;
+      console.error('Error al analizar el tweet:', error);
+      return error;
     }
   }
+  return healthTweets;
 }

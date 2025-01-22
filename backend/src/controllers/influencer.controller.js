@@ -5,6 +5,7 @@ import {
   filterHealthTweets,
   addTweetsToDB,
   getAllTweets,
+  RepetedClaims,
 } from '../services/openIAB.service.js';
 import { getUserTweets, searchInfluencer } from '../services/twitter.service.js';
 
@@ -47,7 +48,11 @@ export const getClaims = async (req, res) => {
 //---usamos el servicio de openIAPI para obtener los tweets
 export const getClaimsfilteredTweets = async (req, res) => {
   try {
-    const data = await extractClaimsFromTweetsfilteredTweets(req.body);
+    // const data = await extractClaimsFromTweetsfilteredTweets(req.body);
+    //---cambiado 22 enero
+
+    const data = await RepetedClaims(req.body);
+
     res.send(data);
   } catch (error) {
     res.status(500).json(error);
