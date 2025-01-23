@@ -6,6 +6,7 @@ import {
   addTweetsToDB,
   getAllTweets,
   RepetedClaims,
+  getTweetsInfluencer,
 } from '../services/openIAB.service.js';
 import { getUserTweets, searchInfluencer } from '../services/twitter.service.js';
 
@@ -82,16 +83,22 @@ export const getUserTweetsFuncionDelete = async (req, res) => {
       if (healthTweets.success) {
         const claimsFromTweets = await healthTweets.message;
         const tweetsDb = await addTweetsToDB(claimsFromTweets);
+
         // res.send(tweetsDb);
-        const tweets = await getAllTweets();
+        // const tweets = await getAllTweets();
+        const tweets = await getTweetsInfluencer(dataBody);
         res.status(200).json(tweets);
       } else {
         // res.send(healthTweets);
-        const tweets = await getAllTweets();
+        const tweets = await getTweetsInfluencer(dataBody);
+
+        // const tweets = await getAllTweets();
         res.status(200).json(tweets);
       }
     } else {
-      const tweets = await getAllTweets();
+      const tweets = await getTweetsInfluencer(dataBody);
+
+      // const tweets = await getAllTweets();
       if (tweets.length > 0) {
         console.log('datos desde db');
 

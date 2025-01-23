@@ -73,6 +73,16 @@ export async function getAllTweets() {
   }
 }
 
+export async function getTweetsInfluencer(influencerId) {
+  try {
+    const tweets = await DataTweet.find({ influencerId: influencerId }).exec();
+    return tweets;
+  } catch (error) {
+    console.error('Error fetching tweets:', error);
+    throw error;
+  }
+}
+
 async function verificacionDataIndb(twwitsfiltered) {
   try {
     try {
@@ -273,8 +283,23 @@ export async function addTweetsToDB(twwitsfiltered) {
 
       let twwitsToDBnotrepited = await RepetedClaims(twwitsToDB);
 
+      //---verifica en la base de datos si ya existen los datos que trae
+      // Obtener solo los IDs de los documentos que se van a insertar
+      const idsb = twwitsToDBnotrepited.map((data) => data.id);
+
+      // Buscar en la base de datos los IDs que ya existen
+      const existingDocsb = await DataTweet.find({ id: { $in: idsb } });
+
+      const existingIdsb = new Set(existingDocsb.map((doc) => doc.id)); // Crear un Set con los IDs existentes, por ejemplo { '123': true, '456': true }
+
+      // Filtrar los documentos que ya existen
+      let twwitsToDBb = twwitsToDBnotrepited.filter((data) => !existingIdsb.has(data.id));
+      //---
+      // return twwitsToDBb;
+      // return twwitsToDBnotrepited;
+
       if (twwitsToDB.length > 0) {
-        dataTweetInserted = await DataTweet.insertMany(twwitsToDBnotrepited);
+        dataTweetInserted = await DataTweet.insertMany(twwitsToDBb);
         return { success: true, data: dataTweetInserted };
       } else {
         return { success: false, message: 'teweets already inserted' };
@@ -371,7 +396,14 @@ export async function RepetedClaimsOriginal(texts) {
 }
 //----code cambiado 22 enero
 export async function RepetedClaims(texts) {
-  const healthTweets = [];
+  // //---------new code
+  let idInfluencerToAddTeewts = texts[0].influencerId;
+  let twwitsInDbForInfluencer = await DataTweet.find({
+    influencerId: idInfluencerToAddTeewts,
+  }).exec();
+  // let dataDbAndNewteewts = twwitsInDbForInfluencer.concat(twwitsToDB); //---creo nuevo arreglo pues no quiero modificar el dato de la llamada de la base de datos
+  const healthTweets = twwitsInDbForInfluencer.length > 0 ? twwitsInDbForInfluencer : [];
+  // //---fin necode
 
   async function areTweetsSimilarDeep(tweet1, tweet2) {
     // const prompt = `¿Los siguientes dos tweets tienen un significado similar?\nTweet 1: "${tweet1}"\nTweet 2: "${tweet2}"\nResponde "sí" o "no" pero sin puntos ni comas.`;
@@ -410,12 +442,15 @@ export async function RepetedClaims(texts) {
       });
 
       const results = await Promise.all(deepCheckPromises);
-
+      console.log('results', results);
       if (results.some((result) => result)) {
         isDuplicate = true;
+        console.log('isDuplicate', isDuplicate);
       }
 
       if (!isDuplicate) {
+        console.log('isDuplicatebb', isDuplicate);
+
         healthTweets.push(tweetInfo);
       }
     } catch (error) {
@@ -423,5 +458,9 @@ export async function RepetedClaims(texts) {
       return error;
     }
   }
+  console.log(
+    'healthTweets',
+    healthTweets.map((e) => e.text)
+  );
   return healthTweets;
 }
