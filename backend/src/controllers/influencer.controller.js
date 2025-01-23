@@ -70,21 +70,39 @@ export const getUserTweetsFuncion = async (req, res) => {
 //---todo delete
 
 export const getUserTweetsFuncionDelete = async (req, res) => {
-  // let dataBody = req.params.id;
-  let dataBody = req.body;
+  let dataBody = req.params.id; //---ejecuta endpoint : tweets
+  // let dataBody = req.body; //---ejecuta endpoint : tweetsb
   try {
     const data = await getUserTweets(dataBody);
-    const healthTweets = await filterHealthTweets(data);
-    if (healthTweets.success) {
-      const claimsFromTweets = await healthTweets.message;
-      const tweetsDb = await addTweetsToDB(claimsFromTweets);
-      // res.send(tweetsDb);
-      const tweets = await getAllTweets();
-      res.status(200).json(tweets);
+
+    if (data[0].author_id) {
+      console.log('Procesando datos from body o teewts');
+
+      const healthTweets = await filterHealthTweets(data);
+      if (healthTweets.success) {
+        const claimsFromTweets = await healthTweets.message;
+        const tweetsDb = await addTweetsToDB(claimsFromTweets);
+        // res.send(tweetsDb);
+        const tweets = await getAllTweets();
+        res.status(200).json(tweets);
+      } else {
+        // res.send(healthTweets);
+        const tweets = await getAllTweets();
+        res.status(200).json(tweets);
+      }
     } else {
-      // res.send(healthTweets);
       const tweets = await getAllTweets();
-      res.status(200).json(tweets);
+      if (tweets.length > 0) {
+        console.log('datos desde db');
+
+        res.status(200).json(tweets);
+      } else {
+        console.log('no hay datos envia el error');
+
+        res.status(200).json(data);
+      }
+
+      // res.status(200).json(tweets);
     }
   } catch (error) {
     res.status(500).json(error);

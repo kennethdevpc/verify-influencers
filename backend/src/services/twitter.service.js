@@ -146,25 +146,26 @@ export function filterOriginalTweets(tweets) {
 // Obtener tweets de un usuario
 export async function getUserTweets(data, maxResults = 100) {
   try {
-    // console.log('Response Data:', data);
-    // const response = await axios.get(`${BASE_URL}/users/${data}/tweets`, {
-    //   headers: {
-    //     Authorization: `Bearer ${TWITTER_BEARER_TOKEN}`,
-    //   },
-    //   params: {
-    //     max_results: maxResults,
-    //     'tweet.fields': 'created_at,public_metrics',
-    //     expansions: 'author_id',
-    //     'user.fields': 'username,public_metrics',
-    //     // exclude: 'replies,retweets',
-    //   },
-    //   timeout: 10000, // Timeout en milisegundos (10 segundos)
-    // });
-    // console.log('Response Data:', response.data);
+    //---ejecuta endpoint : tweets:id
+    console.log('Response Data---antes de entrar:', data);
+    const response = await axios.get(`${BASE_URL}/users/${data}/tweets`, {
+      headers: {
+        Authorization: `Bearer ${TWITTER_BEARER_TOKEN}`,
+      },
+      params: {
+        max_results: maxResults,
+        'tweet.fields': 'created_at,public_metrics',
+        expansions: 'author_id',
+        'user.fields': 'username,public_metrics',
+        // exclude: 'replies,retweets',
+      },
+      timeout: 10000, // Timeout en milisegundos (10 segundos)
+    });
+    console.log('Response Data-despues:', response.data);
 
-    // let twwitsfiltered = filterOriginalTweets(response.data.data);
+    let twwitsfiltered = filterOriginalTweets(response.data.data);
 
-    let twwitsfiltered = filterOriginalTweets(data);
+    // let twwitsfiltered = filterOriginalTweets(data); //---ejecuta endpoint : tweetsb
 
     return twwitsfiltered;
   } catch (error) {
@@ -177,13 +178,15 @@ export async function getUserTweets(data, maxResults = 100) {
         errorCode: error?.code,
       };
     } else if (error.response && error.response.status === 401) {
-      throw {
-        success: false,
-        message: 'Unauthorized: Check your Bearer Token',
-        error: error.message,
-        errorStatus: error?.status,
-        errorCode: error?.code,
-      };
+      return [
+        {
+          success: false,
+          message: 'Unauthorized: Check your Bearer Token',
+          error: error.message,
+          errorStatus: error?.status,
+          errorCode: error?.code,
+        },
+      ];
     } else {
       throw error;
     }
