@@ -8,6 +8,8 @@ import {
   getClaimsfilteredTweets,
   insertTweetsIndB,
   getUserTweetsFuncionDelete,
+  getInfluencers,
+  getInfluencersDetails,
 } from '../controllers/influencer.controller.js';
 const router = express.Router();
 
@@ -20,7 +22,8 @@ router.post('/healthTweets', getHealthTweets); //---filtra todo lo que tiene que
 router.post('/claims', getClaims); //---Extrae todas las afirmaciones, es decir todos los textos, y genere una categoria y un score
 router.post('/claimsfilteredTweets', getClaimsfilteredTweets); //--obtengo de manera ordenada y filtrada sin repeticiones
 
-router.get('/influencers', getInfluencers); //---obtengo los tweets de un usuario
+router.get('/influencers', getInfluencers); //---obtengo los influencers
+router.get('/details/:id', getInfluencersDetails); //---obtengo los el detalle de un influencer
 //todo Obtener from database
 router.get('/details/:id', getInfluencerDetails);
 

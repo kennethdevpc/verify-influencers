@@ -7,9 +7,11 @@ import {
   getAllTweets,
   RepetedClaims,
   getTweetsInfluencer,
+  getInfluencersService,
+  getInfluencersIdService,
 } from '../services/openIAB.service.js';
 import { getUserTweets, searchInfluencer } from '../services/twitter.service.js';
-
+import stringSimilarity from 'string-similarity';
 export const analyzeInfluencer = async (req, res) => {
   try {
     const { username, platform } = req.body;
@@ -130,4 +132,189 @@ export const analyzeInfluencerA = async (req, res) => {
 
 export const getInfluencerDetails = async (req, res) => {
   res.send('getInfluencerDetails');
+};
+
+export const getInfluencers = async (req, res) => {
+  const tweets = await getInfluencersService();
+  let principalData = tweets.map(async (tweet) => {
+    console.log('------', tweet.id);
+    let data = await getInfluencersDetailsGeneral(tweet.id);
+    return data;
+    // getInfluencersDetailsGeneral;
+  });
+
+  const principalDataWithDetails = await Promise.all(principalData);
+
+  res.send(principalDataWithDetails);
+};
+
+export const getInfluencersDetailsGeneral = async (req, res) => {
+  let id = req;
+  const details = await getInfluencersIdService(id);
+  const tweets = await getTweetsInfluencer(id);
+  const characteristics = 0;
+  let scoreData = 0;
+  let verifiedClaims = 0;
+
+  let cantNutrition = 0;
+  let cantMedicine = 0;
+  let cantMentalHealth = 0;
+  let cantFitness = 0;
+  let cantExercise = 0;
+
+  for (let i = 0; i < tweets.length; i++) {
+    scoreData = scoreData + parseInt(tweets[i].cleanedPhrase.split('|')[0]);
+
+    const statusVerified = tweets[i].statusAnalysis.toLowerCase().replace(/\s/g, ''); // Convertir a minúsculas y eliminar espacios
+    const similarity = stringSimilarity.compareTwoStrings(statusVerified, 'verified');
+    if (similarity >= 0.7) {
+      verifiedClaims++;
+    }
+
+    //---Nutrition, Medicine, MentalHealth, Fitness,Exercise,
+    const statusCategory = tweets[i].categoryType.toLowerCase().replace(/\s/g, ''); // Convertir a minúsculas y eliminar espacios
+    const nutrition = stringSimilarity.compareTwoStrings(statusCategory, 'nutrition');
+    const medicine = stringSimilarity.compareTwoStrings(statusCategory, 'medicine');
+    const mentalHealth = stringSimilarity.compareTwoStrings(statusCategory, 'mentalhealth');
+    const fitness = stringSimilarity.compareTwoStrings(statusCategory, 'fitness');
+    const exercise = stringSimilarity.compareTwoStrings(statusCategory, 'exercise');
+    console.log(statusCategory);
+    if (nutrition >= 0.6) {
+      cantNutrition = cantNutrition + 1;
+    } else if (medicine >= 0.6) {
+      cantMedicine = cantMedicine + 1;
+    } else if (mentalHealth >= 0.6) {
+      cantMentalHealth = cantMentalHealth + 1;
+    } else if (fitness >= 0.6) {
+      cantFitness = cantFitness + 1;
+    } else if (exercise >= 0.6) {
+      cantExercise = cantExercise + 1;
+    }
+  }
+  console.log(
+    'cantNutrition:',
+    cantNutrition,
+    'cantMedicine:',
+    cantMedicine,
+    'cantMentalHealth:',
+    cantMentalHealth,
+    'cantFitness:',
+    cantFitness,
+    'cantExercise:',
+    cantExercise
+  );
+
+  // Crear un objeto con las categorías que tengan más de 1 tweet
+  const categoriesWithCount = {
+    Nutrition: cantNutrition >= 1 ? cantNutrition : null,
+    Medicine: cantMedicine >= 1 ? cantMedicine : null,
+    Mental_Health: cantMentalHealth > 1 ? cantMentalHealth : null,
+    Fitness: cantFitness >= 1 ? cantFitness : null,
+    Exercise: cantExercise >= 1 ? cantExercise : null,
+  };
+
+  // Filtrar el objeto para eliminar las categorías con null (menos de 2 tweets)
+  const filteredCategories = Object.fromEntries(
+    Object.entries(categoriesWithCount).filter(([_, value]) => value !== null)
+  );
+  console.log(filteredCategories);
+
+  let score = Math.ceil(scoreData / tweets.length);
+
+  let data = {
+    details,
+    name: details[0].name,
+    profileImage: details[0].profileImageUrl,
+    filteredCategories,
+    score,
+    followers: details[0].followers,
+    verifiedClaims,
+  };
+
+  return data;
+};
+export const getInfluencersDetails = async (req, res) => {
+  let id = req.params.id;
+  const details = await getInfluencersIdService(id);
+  const tweets = await getTweetsInfluencer(id);
+  const characteristics = 0;
+  let scoreData = 0;
+  let verifiedClaims = 0;
+
+  let cantNutrition = 0;
+  let cantMedicine = 0;
+  let cantMentalHealth = 0;
+  let cantFitness = 0;
+  let cantExercise = 0;
+
+  for (let i = 0; i < tweets.length; i++) {
+    scoreData = scoreData + parseInt(tweets[i].cleanedPhrase.split('|')[0]);
+
+    const statusVerified = tweets[i].statusAnalysis.toLowerCase().replace(/\s/g, ''); // Convertir a minúsculas y eliminar espacios
+    const similarity = stringSimilarity.compareTwoStrings(statusVerified, 'verified');
+    if (similarity >= 0.7) {
+      verifiedClaims++;
+    }
+
+    //---Nutrition, Medicine, MentalHealth, Fitness,Exercise,
+    const statusCategory = tweets[i].categoryType.toLowerCase().replace(/\s/g, ''); // Convertir a minúsculas y eliminar espacios
+    const nutrition = stringSimilarity.compareTwoStrings(statusCategory, 'nutrition');
+    const medicine = stringSimilarity.compareTwoStrings(statusCategory, 'medicine');
+    const mentalHealth = stringSimilarity.compareTwoStrings(statusCategory, 'mentalhealth');
+    const fitness = stringSimilarity.compareTwoStrings(statusCategory, 'fitness');
+    const exercise = stringSimilarity.compareTwoStrings(statusCategory, 'exercise');
+    console.log(statusCategory);
+    if (nutrition >= 0.6) {
+      cantNutrition = cantNutrition + 1;
+    } else if (medicine >= 0.6) {
+      cantMedicine = cantMedicine + 1;
+    } else if (mentalHealth >= 0.6) {
+      cantMentalHealth = cantMentalHealth + 1;
+    } else if (fitness >= 0.6) {
+      cantFitness = cantFitness + 1;
+    } else if (exercise >= 0.6) {
+      cantExercise = cantExercise + 1;
+    }
+  }
+  console.log(
+    'cantNutrition:',
+    cantNutrition,
+    'cantMedicine:',
+    cantMedicine,
+    'cantMentalHealth:',
+    cantMentalHealth,
+    'cantFitness:',
+    cantFitness,
+    'cantExercise:',
+    cantExercise
+  );
+
+  // Crear un objeto con las categorías que tengan más de 1 tweet
+  const categoriesWithCount = {
+    Nutrition: cantNutrition >= 1 ? cantNutrition : null,
+    Medicine: cantMedicine >= 1 ? cantMedicine : null,
+    Mental_Health: cantMentalHealth > 1 ? cantMentalHealth : null,
+    Fitness: cantFitness >= 1 ? cantFitness : null,
+    Exercise: cantExercise >= 1 ? cantExercise : null,
+  };
+
+  // Filtrar el objeto para eliminar las categorías con null (menos de 2 tweets)
+  const filteredCategories = Object.fromEntries(
+    Object.entries(categoriesWithCount).filter(([_, value]) => value !== null)
+  );
+  console.log(filteredCategories);
+
+  let score = Math.ceil(scoreData / tweets.length);
+
+  let data = {
+    details,
+    name: details[0].name,
+    profileImage: details[0].profileImageUrl,
+    filteredCategories,
+    score,
+    followers: details[0].followers,
+    verifiedClaims,
+  };
+
+  res.send(data);
 };

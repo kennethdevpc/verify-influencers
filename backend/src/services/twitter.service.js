@@ -161,7 +161,7 @@ export async function getUserTweets(data, maxResults = 100) {
       },
       timeout: 10000, // Timeout en milisegundos (10 segundos)
     });
-    console.log('Response Data-despues:', response.data);
+    console.log('Response Data-despues:', response);
 
     let twwitsfiltered = filterOriginalTweets(response.data.data);
 

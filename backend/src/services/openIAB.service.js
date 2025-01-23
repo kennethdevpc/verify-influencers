@@ -1,6 +1,7 @@
 import OpenAI from 'openai'; // Nueva versión del SDK
 import dotenv from 'dotenv'; //----dotenv
 import DataTweet from '../models/DataTweet.model.js';
+import Influencer from '../models/Influencer.model.js';
 
 dotenv.config();
 // Configuración de OpenAI con tu clave de API
@@ -77,6 +78,24 @@ export async function getTweetsInfluencer(influencerId) {
   try {
     const tweets = await DataTweet.find({ influencerId: influencerId }).exec();
     return tweets;
+  } catch (error) {
+    console.error('Error fetching tweets:', error);
+    throw error;
+  }
+}
+export async function getInfluencersService() {
+  try {
+    const tweets = await Influencer.find({}).exec();
+    return tweets;
+  } catch (error) {
+    console.error('Error fetching tweets:', error);
+    throw error;
+  }
+}
+export async function getInfluencersIdService(id) {
+  try {
+    const details = await Influencer.find({ id }).exec();
+    return details;
   } catch (error) {
     console.error('Error fetching tweets:', error);
     throw error;
