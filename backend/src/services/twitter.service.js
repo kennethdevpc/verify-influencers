@@ -163,6 +163,12 @@ export async function getUserTweets(data, maxResults = 100) {
     });
     console.log('Response Data-despues:', response);
 
+    // Verifica si hay datos en la respuesta
+    if (!response.data.data || response.data.data.length === 0) {
+      console.log('No se encontraron tweets.');
+      return []; // Retorna un arreglo vacío si no hay tweets
+    }
+
     let twwitsfiltered = filterOriginalTweets(response.data.data);
 
     // let twwitsfiltered = filterOriginalTweets(data); //---ejecuta endpoint : tweetsb
@@ -170,13 +176,15 @@ export async function getUserTweets(data, maxResults = 100) {
     return twwitsfiltered;
   } catch (error) {
     if (error.response && error.response.status === 429) {
-      throw {
-        success: false,
-        message: 'Error too many requests, change your Tweeter API keys',
-        error: error.message,
-        errorStatus: error?.status,
-        errorCode: error?.code,
-      };
+      return [
+        {
+          success: false,
+          message: 'Error too many requests, change your Tweeter API keys',
+          error: error.message,
+          errorStatus: error?.status,
+          errorCode: error?.code,
+        },
+      ];
     } else if (error.response && error.response.status === 401) {
       return [
         {

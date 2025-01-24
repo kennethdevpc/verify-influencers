@@ -107,13 +107,14 @@ export const getUserTweetsFuncionDelete = async (req, res) => {
         res.status(200).json(tweets);
       } else {
         console.log('no hay datos envia el error');
-
+        let situation = (data[0].situation = 'with out data from DB');
         res.status(200).json(data);
       }
 
       // res.status(200).json(tweets);
     }
   } catch (error) {
+    console.log('Error:', error);
     res.status(500).json(error);
   }
 };
