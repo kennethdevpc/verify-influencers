@@ -2,6 +2,7 @@ import OpenAI from 'openai'; // Nueva versión del SDK
 import dotenv from 'dotenv'; //----dotenv
 import DataTweet from '../models/DataTweet.model.js';
 import Influencer from '../models/Influencer.model.js';
+import DataTweetWithoutFilter from '../models/DataTweetWithoutFilter.model.js';
 
 dotenv.config();
 // Configuración de OpenAI con tu clave de API
@@ -301,6 +302,7 @@ export async function addTweetsToDB(twwitsfiltered) {
       });
 
       let twwitsToDBnotrepited = await RepetedClaims(twwitsToDB);
+      console.log('twwitsToDBnotrepited--', twwitsToDBnotrepited);
 
       //---verifica en la base de datos si ya existen los datos que trae
       // Obtener solo los IDs de los documentos que se van a insertar
@@ -482,4 +484,67 @@ export async function RepetedClaims(texts) {
     healthTweets.map((e) => e.text)
   );
   return healthTweets;
+}
+
+export async function addTweetsToDBWithoutfilter(twwitsfiltered) {
+  console.log('twwitsfilteredwithouthfilter', twwitsfiltered[0]);
+  try {
+    const twwitsToDB = twwitsfiltered.map((data) => ({
+      id: data.id,
+      influencerId: data.influencerId,
+      created_at: data.created_at,
+      text: data.text,
+      claimsRaw: data.claimsRaw,
+      categoryType: data.categoryType,
+      cleanedPhrase: data.cleanedPhrase,
+      statusAnalysis: data.statusAnalysis,
+      lines: data.lines,
+    }));
+    // Inserta todos los documentos usando `insertMany`
+    // const dataTweetInserted = await DataTweet.insertMany(twwitsToDB);
+    let dataTweetInserted;
+    try {
+      // Obtener solo los IDs de los documentos que se van a insertar
+      const ids = twwitsfiltered.map((data) => data.id);
+
+      // Buscar en la base de datos los IDs que ya existen
+      const existingDocs = await DataTweetWithoutFilter.find({ id: { $in: ids } });
+
+      const existingIds = new Set(existingDocs.map((doc) => doc.id)); // Crear un Set con los IDs existentes, por ejemplo { '123': true, '456': true }
+
+      // Filtrar los documentos que ya existen
+      let twwitsToDB = twwitsfiltered.filter((data) => !existingIds.has(data.id)); //--------------------
+
+      //---filtor por si se entrega el mismo id en la misma peticion
+      const uniqueDocs = new Map();
+      twwitsToDB = twwitsToDB.filter((data) => {
+        if (uniqueDocs.has(data.id)) {
+          return false;
+        } else {
+          uniqueDocs.set(data.id, true);
+          return true;
+        }
+      });
+
+      if (twwitsToDB.length > 0) {
+        dataTweetInserted = await DataTweetWithoutFilter.insertMany(twwitsToDB);
+        return { success: true, data: dataTweetInserted };
+      } else {
+        return { success: false, message: 'teweets already inserted' };
+      }
+    } catch (error) {
+      console.error('Error al insertar documentos:', error);
+      return { success: false, message: 'Error  in the server', error: error.message };
+    }
+  } catch (error) {
+    if (error.response && error.response.status === 429) {
+      const retryAfter = error.response.headers['retry-after'];
+      const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 30000; // Default to 30s
+      console.log(`Rate limit exceeded. Retrying after ${waitTime / 1000}s...`);
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
+      return getUserTweets(userId, maxResults); // Retry
+    } else {
+      throw error;
+    }
+  }
 }

@@ -9,6 +9,7 @@ import {
   getTweetsInfluencer,
   getInfluencersService,
   getInfluencersIdService,
+  addTweetsToDBWithoutfilter,
 } from '../services/openIAB.service.js';
 import { getUserTweets, searchInfluencer } from '../services/twitter.service.js';
 import stringSimilarity from 'string-similarity';
@@ -77,6 +78,7 @@ export const getUserTweetsFuncionDelete = async (req, res) => {
   // let dataBody = req.body; //---ejecuta endpoint : tweetsb
   try {
     const data = await getUserTweets(dataBody);
+    const tweetsWithOutfilterDb = await addTweetsToDBWithoutfilter(data);
 
     if (data[0].author_id) {
       console.log('Procesando datos from body o teewts');
@@ -165,6 +167,11 @@ export const getInfluencersDetailsGeneral = async (req, res) => {
 
   for (let i = 0; i < tweets.length; i++) {
     scoreData = scoreData + parseInt(tweets[i].cleanedPhrase.split('|')[0]);
+    console.log('scoreDataxxxx------:', tweets[i]);
+
+    if (tweets[i].id === '1658481854230478850') {
+      console.log('scoreData------:', scoreData);
+    }
 
     const statusVerified = tweets[i].statusAnalysis.toLowerCase().replace(/\s/g, ''); // Convertir a minúsculas y eliminar espacios
     const similarity = stringSimilarity.compareTwoStrings(statusVerified, 'verified');

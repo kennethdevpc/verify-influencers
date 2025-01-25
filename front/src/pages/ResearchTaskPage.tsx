@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ScientificJournal from '../components/ScientificJournal';
-import { Link } from 'react-router-dom';
-import { MoveLeft } from 'lucide-react';
+import { allInfluencerStore } from '../store/useAuthStore';
 
-type Props = {};
+function ResearchTaskPage() {
+  const { influencers, getInfluencers } = allInfluencerStore();
+  useEffect(() => {
+    getInfluencers();
+  }, [getInfluencers]);
 
-function ResearchTaskPage({}: Props) {
   const [influencerName, setInfluencerName] = useState('');
   const [claimsToAnalyze, setClaimsToAnalyze] = useState(50);
   const handleStartResearch = () => {
@@ -63,6 +65,27 @@ function ResearchTaskPage({}: Props) {
       >
         Start Research
       </button>
+
+      <div>
+        <h1>Influencers</h1>
+        {influencers.map((influencer, index) => (
+          <div key={index}>
+            <h2>{influencer.name}</h2>
+            <img src={influencer.profileImage} alt={influencer.name} />
+            <p>Followers: {influencer.followers}</p>
+            <p>Verified Claims: {influencer.verifiedClaims}</p>
+            <p>Score: {influencer.score ?? 'N/A'}</p>
+            <h3>Details:</h3>
+            {influencer.details.map((detail, detailIndex) => (
+              <div key={detailIndex}>
+                <p>{detail.description}</p>
+                <img src={detail.profileImageUrl} alt={detail.name} />
+                <p>Followers: {detail.followers}</p>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

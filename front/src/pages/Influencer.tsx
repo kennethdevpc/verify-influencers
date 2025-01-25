@@ -1,5 +1,3 @@
-import React from 'react';
-
 const influencer = {
   name: 'Andrew Huberman',
   category: 'Neuroscience',
