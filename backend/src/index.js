@@ -26,7 +26,7 @@ app.use('/api', api);
 
 //----------"configuracion para produccion"
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../frontend/dist'))); //---entonces aqui usa los archivos estaticos
+  app.use(express.static(path.join(__dirname, '../front/dist'))); //---entonces aqui usa los archivos estaticos
 
   app.get('*', (req, res) => {
     res.sendFile(path.resolve(__dirname, '../front', 'dist', 'index.html'));
