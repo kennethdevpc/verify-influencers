@@ -11,9 +11,8 @@ function ResearchTaskPage() {
 
   const [influencerName, setInfluencerName] = useState({ id: '', name: '' }); //-----------
   const [claimsToAnalyze, setClaimsToAnalyze] = useState(50);
-  const handleStartResearch = () => {
-    console.log(`Starting research for: ${influencerName.id}`);
 
+  const handleStartResearch = () => {
     getTweets(influencerName.id);
   };
 
