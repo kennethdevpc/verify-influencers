@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { allInfluencerStore } from '../store/useAuthStore';
+import { allInfluencerStore } from '../store/useInfluencerStore';
 import { ArrowUp10 } from 'lucide-react';
 
 const Leaderboard = () => {
