@@ -1,0 +1,7 @@
+PORT=5001
+OPENAI_API_KEY=sk-projxxxxxxxxxxx
+wHi5
+TWITTER_BEARER_TOKEN=AAxxxxxxxxx
+MONGODB_URI=mongodb+srv://userdemongo:clavemongo@cluster0.hcroc.mongodb.net/nameOfyourdatabae?retryWrites=true&w=majority&appName=Cluster0
+claveothermongo=w0ECMxxxxxxxxx
+NODE_ENV=development

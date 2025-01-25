@@ -19,9 +19,9 @@ app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(express.json());
 
 //--rutas
-app.get('/', (req, res) => {
-  res.send('hola');
-});
+// app.get('/', (req, res) => {
+//   res.send('hola');
+// });
 app.use('/api', api);
 
 //----------"configuracion para produccion"
@@ -29,7 +29,7 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../frontend/dist'))); //---entonces aqui usa los archivos estaticos
 
   app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../frontend', 'dist', 'index.html'));
+    res.sendFile(path.resolve(__dirname, '../front', 'dist', 'index.html'));
   });
 }
 
