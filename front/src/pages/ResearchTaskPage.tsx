@@ -7,8 +7,11 @@ function ResearchTaskPage() {
   const { tweets, getTweets } = useTweetStore();
   const { influencers, getInfluencers } = allInfluencerStore();
 
-  const [showResults, setShowResults] = useState(false);
+  const [selectedDateRange, setSelectedDateRange] = useState<'week' | 'month' | 'year' | 'all'>(
+    'all'
+  );
 
+  const [showResults, setShowResults] = useState(false);
   const [influencerName, setInfluencerName] = useState({ id: '', name: '' }); //-----------
   const [claimsToAnalyze, setClaimsToAnalyze] = useState(50);
 
@@ -23,6 +26,26 @@ function ResearchTaskPage() {
   const filteredInfluencers = influencers.filter((influencer) =>
     influencer.name.toLowerCase().includes(influencerName.name.toLowerCase())
   );
+  const getDateRange = (range: 'week' | 'month' | 'year' | 'all') => {
+    const now = new Date();
+    switch (range) {
+      case 'week':
+        return new Date(now.setDate(now.getDate() - 7));
+      case 'month':
+        return new Date(now.setMonth(now.getMonth() - 1));
+      case 'year':
+        return new Date(now.setFullYear(now.getFullYear() - 1));
+      case 'all':
+        return new Date(0); // Fecha mínima (1 de enero de 1970)
+      default:
+        return new Date(0);
+    }
+  };
+  const filteredTweets = tweets.filter((tweet) => {
+    const tweetDate = new Date(tweet.created_at);
+    const startDate = getDateRange(selectedDateRange);
+    return tweetDate >= startDate;
+  });
 
   return (
     <div className="p-6 bg-base-200 text-base-content rounded-lg container mx-auto pt-">
@@ -33,11 +56,34 @@ function ResearchTaskPage() {
       </div>
       <div className="mb-4">
         <label className="block text-sm font-medium mb-2">Time Range</label>
-        <div className="flex space-x-4">
-          <button className="btn btn-outline">Last Week</button>
-          <button className="btn btn-outline btn-active">Last Month</button>
-          <button className="btn btn-outline">Last Year</button>
-          <button className="btn btn-outline">All Time</button>
+        <div className="mb-4">
+          <label className="block text-sm font-medium mb-2">Time Range</label>
+          <div className="flex space-x-4">
+            <button
+              className={`btn btn-outline ${selectedDateRange === 'week' ? 'btn-active' : ''}`}
+              onClick={() => setSelectedDateRange('week')}
+            >
+              Last Week
+            </button>
+            <button
+              className={`btn btn-outline ${selectedDateRange === 'month' ? 'btn-active' : ''}`}
+              onClick={() => setSelectedDateRange('month')}
+            >
+              Last Month
+            </button>
+            <button
+              className={`btn btn-outline ${selectedDateRange === 'year' ? 'btn-active' : ''}`}
+              onClick={() => setSelectedDateRange('year')}
+            >
+              Last Year
+            </button>
+            <button
+              className={`btn btn-outline ${selectedDateRange === 'all' ? 'btn-active' : ''}`}
+              onClick={() => setSelectedDateRange('all')}
+            >
+              All Time
+            </button>
+          </div>
         </div>
       </div>
 
@@ -104,6 +150,15 @@ function ResearchTaskPage() {
             <p>{tweet.text}</p>
           </div>
         ))}
+
+        <div>
+          <h1>Influencers</h1>
+          {filteredTweets.map((tweet, index) => (
+            <div key={index}>
+              <p>{tweet.text}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
