@@ -32,7 +32,7 @@ interface ProfileInfluencerStore {
   getInfluencers: () => Promise<void>;
 }
 
-export const allInfluencerStore = create<ProfileInfluencerStore>((set, get) => ({
+export const allInfluencerStore = create<ProfileInfluencerStore>((set) => ({
   influencers: [],
 
   getInfluencers: async () => {

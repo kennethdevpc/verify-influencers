@@ -1,10 +1,7 @@
 import { MoveLeft } from 'lucide-react';
-import React from 'react';
 import { Link } from 'react-router-dom';
 
-type Props = {};
-
-function ReturnDashboard({}: Props) {
+function ReturnDashboard() {
   return (
     <div className="container mx-auto flex items-center gap-4 mb-2 pt-24">
       <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-all">

@@ -1,8 +1,4 @@
-import React from 'react';
-
-type Props = {};
-
-function ScientificJournal({}: Props) {
+function ScientificJournal() {
   return (
     <div className="mb-4">
       <label className="block text-sm font-medium mb-2">Scientific Journals</label>

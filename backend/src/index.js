@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv'; //----dotenv
 import cors from 'cors';
 import api from './routes/ api.route.js';
+import path from 'path'; //----importo path, de node - "configuracion para produccion"
 
 import { TWITTER_BEARER_TOKEN, YOUTUBE_API_KEY } from './config/apiKeys.js';
 import { connectDB } from './lib/db.js'; //---importo la conexion a la base de datos
@@ -11,6 +12,7 @@ import mongoose from 'mongoose';
 dotenv.config(); //------dotenv.config();
 const PORT = process.env.PORT || 3000; //----uso de dotenv
 const app = express();
+const __dirname = path.resolve(); //----creo una variable para guardar la ruta del directorio actual -"configuracion para produccion"
 
 app.use(cors());
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
@@ -21,6 +23,16 @@ app.get('/', (req, res) => {
   res.send('hola');
 });
 app.use('/api', api);
+
+//----------"configuracion para produccion"
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../frontend/dist'))); //---entonces aqui usa los archivos estaticos
+
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, '../frontend', 'dist', 'index.html'));
+  });
+}
+
 app.listen(PORT, () => {
   console.log('Server is running on port ', PORT);
   connectDB(); //------conecto la base de datos

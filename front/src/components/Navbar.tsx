@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Shield, LogOut, MessageSquare, Settings, User } from 'lucide-react';
+import { Shield, LogOut, User } from 'lucide-react';
 
 const Navbar = () => {
   return (
