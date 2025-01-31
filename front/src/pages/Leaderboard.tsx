@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { allInfluencerStore } from '../store/useInfluencerStore';
 import { ArrowUp10 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Leaderboard = () => {
   const { influencers, getInfluencers } = allInfluencerStore();
@@ -94,20 +95,22 @@ const Leaderboard = () => {
               ? Object.keys(influencer.filteredCategories)
               : ['Search information'];
 
-            console.log('---------------', Object.keys(influencer.filteredCategories));
-            console.log('---------------', influencer.name);
-
             return (
               <tr key={index} className="text-center border-t">
                 <td className="p-2">{index + 1}</td>
 
                 <td className="p-2 flex items-center gap-2">
-                  <img
-                    src={influencer.profileImage}
-                    alt={influencer.name}
-                    className="rounded-full w-10 h-10"
-                  />{' '}
-                  {influencer.name}
+                  <Link
+                    to={`/influencer/${influencer.details[0].id}`}
+                    className="flex items-center gap-2.5 p-2 rounded-md hover:bg-white/20 transition-all duration-200"
+                  >
+                    <img
+                      src={influencer.profileImage}
+                      alt={influencer.name}
+                      className="rounded-full w-10 h-10"
+                    />{' '}
+                    {influencer.name}
+                  </Link>
                 </td>
 
                 <td className="p-2">

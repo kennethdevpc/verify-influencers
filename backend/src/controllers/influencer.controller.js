@@ -11,6 +11,7 @@ import {
   getInfluencersIdService,
   addTweetsToDBWithoutfilter,
 } from '../services/openIAB.service.js';
+import { scrapeTweets } from '../services/serpApi.service.js';
 import { getUserTweets, searchInfluencer } from '../services/twitter.service.js';
 import stringSimilarity from 'string-similarity';
 export const analyzeInfluencer = async (req, res) => {
@@ -316,13 +317,22 @@ export const getInfluencersDetails = async (req, res) => {
 
   let data = {
     details,
-    name: details[0].name,
-    profileImage: details[0].profileImageUrl,
+    name: details[0]?.name,
+    profileImage: details[0]?.profileImageUrl,
     filteredCategories,
     score,
-    followers: details[0].followers,
+    followers: details[0]?.followers,
     verifiedClaims,
   };
 
+  res.send(data);
+};
+
+export const getInfluencersFromSerpApi = async (req, res) => {
+  // const dataBody = req.body;
+  // let query = `from:${dataBody}`;
+  let query = 'from:EricTopol';
+
+  const data = await scrapeTweets(query);
   res.send(data);
 };

@@ -10,8 +10,10 @@ import {
   getUserTweetsFuncionDelete,
   getInfluencers,
   getInfluencersDetails,
+  getInfluencersFromSerpApi,
 } from '../controllers/influencer.controller.js';
 const router = express.Router();
+router.get('/seapApi', getInfluencersFromSerpApi);
 
 router.post('/analyze', analyzeInfluencer); //--obtengo usuario y sus detalles Id y nombre
 router.get('/tweets/:id', getUserTweetsFuncionDelete); //--obtengo los tweets (100 maximo), de un usuario

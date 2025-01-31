@@ -52,12 +52,13 @@ function ResearchTaskPage() {
       <h2 className="text-2xl font-semibold mb-1">Research Tasks</h2>
 
       <div className="flex space-x-4 mb-6">
-        <button className="btn btn-primary flex-1">Specific Influencer</button>
+        <button onClick={handleStartResearch} className="btn btn-primary flex-1">
+          Specific Influencer
+        </button>
       </div>
       <div className="mb-4">
         <label className="block text-sm font-medium mb-2">Time Range</label>
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-2">Time Range</label>
           <div className="flex space-x-4">
             <button
               className={`btn btn-outline ${selectedDateRange === 'week' ? 'btn-active' : ''}`}
@@ -128,36 +129,33 @@ function ResearchTaskPage() {
           onChange={(e) => setClaimsToAnalyze(Number(e.target.value))}
         />
       </div>
-      <ScientificJournal />
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">Notes for Research Assistant</label>
-        <textarea
-          placeholder="Add any specific instructions or focus areas..."
-          className="textarea textarea-bordered w-full"
-        ></textarea>
-      </div>
-      <button
-        onClick={handleStartResearch}
-        className="mt-6 px-4 py-2 bg-blue-500 text-white rounded"
-      >
-        Start Research
-      </button>
 
       <div>
-        <h1>Influencers</h1>
-        {tweets.map((tweet, index) => (
-          <div key={index}>
-            <p>{tweet.text}</p>
+        <div className="mt-6">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="p-3 text-left border">No.</th>
+                  <th className="p-3 text-left border">Tweet Text</th>
+                  <th className="p-3 text-left border">Category</th>
+                  <th className="p-3 text-left border">Analysis Status</th>
+                  <th className="p-3 text-left border">Cleaned Phrase</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredTweets.map((tweet, index) => (
+                  <tr key={tweet._id} className="border-b hover:bg-gray-50">
+                    <td className="p-3 border">{index + 1}</td>
+                    <td className="p-3 border">{tweet.text}</td>
+                    <td className="p-3 border">{tweet.categoryType}</td>
+                    <td className="p-3 border">{tweet.statusAnalysis}</td>
+                    <td className="p-3 border">{tweet.cleanedPhrase}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        ))}
-
-        <div>
-          <h1>Influencers</h1>
-          {filteredTweets.map((tweet, index) => (
-            <div key={index}>
-              <p>{tweet.text}</p>
-            </div>
-          ))}
         </div>
       </div>
     </div>

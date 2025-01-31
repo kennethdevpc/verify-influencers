@@ -37,12 +37,6 @@ const Navbar = () => {
             >
               <h1 className="text-lg">leaderboard</h1>
             </Link>
-            <Link
-              to="/influencer/:1"
-              className="flex items-center gap-2.5 hover:opacity-80 transition-all"
-            >
-              <h1 className="text-lg">influencer</h1>
-            </Link>
           </div>
           <div className="flex items-center gap-4">
             {/* Menú hamburguesa para pantallas pequeñas (sm) */}
