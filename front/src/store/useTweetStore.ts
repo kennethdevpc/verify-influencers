@@ -19,6 +19,7 @@ interface Tweet {
 interface TweetStore {
   tweets: Tweet[];
   getTweets: (influencerId: string) => Promise<void>;
+  resetTweets: () => void;
 }
 
 export const useTweetStore = create<TweetStore>((set) => ({
@@ -33,4 +34,5 @@ export const useTweetStore = create<TweetStore>((set) => ({
       console.error('Error obteniendo tweets:', error);
     }
   },
+  resetTweets: () => set({ tweets: [] }),
 }));

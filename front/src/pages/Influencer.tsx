@@ -1,10 +1,13 @@
 import { useParams } from 'react-router-dom';
 import { allInfluencerStore } from '../store/useInfluencerStore';
 import { useEffect } from 'react';
+import { useTweetStore } from '../store/useTweetStore';
+import ReturnDashboard from '../components/ReturnDashboard';
 
 const Influencer = () => {
   const { id } = useParams<{ id: string }>();
   const { getInfluencerById, influencer } = allInfluencerStore();
+  const { tweets, getTweets } = useTweetStore();
 
   console.log('............', Object.keys(influencer.filteredCategories));
 
@@ -12,6 +15,7 @@ const Influencer = () => {
     // Si el influencer ya está en el estado global, no volver a hacer la petición
     if (id && (!influencer || influencer?.details[0]?.id !== id)) {
       getInfluencerById(id);
+      getTweets(id);
     }
   }, [id, getInfluencerById, influencer]); // Se ejecuta solo cuando cambia el ID
 
@@ -21,8 +25,11 @@ const Influencer = () => {
   const formatNumber = (num: string) => {
     return new Intl.NumberFormat('en', { notation: 'compact' }).format(parseInt(num));
   };
+
   return (
     <div className="bg-gray-900 text-white min-h-screen p-6">
+      <ReturnDashboard route="/leaderboard" title="Details" backRoute="Leaderboard" />
+
       {/* Header */}
       <div className="max-w-5xl mx-auto bg-gray-800 p-6 rounded-lg shadow-lg">
         <div className="flex items-center gap-6">
@@ -68,14 +75,33 @@ const Influencer = () => {
       <div className="max-w-5xl mx-auto bg-gray-800 p-6 mt-6 rounded-lg shadow-lg">
         <h2 className="text-2xl font-semibold">Claims Analysis {influencer.verifiedClaims}</h2>
 
-        <div className="mt-4 space-y-4">
-          {/* {influencer.verifiedClaims.map((claim, index) => (
-            <div key={index} className="bg-gray-700 p-4 rounded-lg">
-              <p className="text-lg">{claim.text}</p>
-              <p className="text-gray-400 text-sm">Status: {claim.status}</p>
-              <p className="text-gray-400 text-sm">Confidence Score: {claim.score}%</p>
+        <div>
+          <div className="mt-6">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead className="bg-zinc-700">
+                  <tr>
+                    <th className="p-3 text-left border">No.</th>
+                    <th className="p-3 text-left border">Tweet Text</th>
+                    <th className="p-3 text-left border">Category</th>
+                    <th className="p-3 text-left border">Analysis Status</th>
+                    <th className="p-3 text-left border">Cleaned Phrase</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tweets.map((tweet, index) => (
+                    <tr key={tweet._id} className="border-b hover:bg-gray-700">
+                      <td className="p-3 border">{index + 1}</td>
+                      <td className="p-3 border">{tweet.text}</td>
+                      <td className="p-3 border">{tweet.categoryType}</td>
+                      <td className="p-3 border">{tweet.statusAnalysis}</td>
+                      <td className="p-3 border">{tweet.cleanedPhrase}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          ))} */}
+          </div>
         </div>
       </div>
     </div>

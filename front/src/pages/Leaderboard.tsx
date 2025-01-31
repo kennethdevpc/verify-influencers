@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { allInfluencerStore } from '../store/useInfluencerStore';
 import { ArrowUp10 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import ReturnDashboard from '../components/ReturnDashboard';
 
 const Leaderboard = () => {
   const { influencers, getInfluencers } = allInfluencerStore();
@@ -49,7 +50,9 @@ const Leaderboard = () => {
   const categories = ['All', 'Nutrition', 'Mental_Health', 'Fitness', 'Exercise'];
 
   return (
-    <div className="p-8">
+    <div className="p-6 bg-base-200 text-base-content rounded-lg container mx-auto pt-">
+      <ReturnDashboard route="/" title="Home" backRoute="Dashboard" />
+
       <h1 className="text-2xl font-bold">Influencer Trust Leaderboard</h1>
       <label className="block text-sm font-medium mb-2">Category </label>
 

@@ -11,7 +11,6 @@ function App() {
   return (
     <div className="text-white">
       <Navbar />
-      <ReturnDashboard />
 
       <Routes>
         <Route path="/" element={<HomePage />} />

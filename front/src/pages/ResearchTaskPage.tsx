@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import ScientificJournal from '../components/ScientificJournal';
 import { useTweetStore } from '../store/useTweetStore';
 import { allInfluencerStore } from '../store/useInfluencerStore';
+import ReturnDashboard from '../components/ReturnDashboard';
 
 function ResearchTaskPage() {
-  const { tweets, getTweets } = useTweetStore();
+  const { tweets, getTweets, resetTweets } = useTweetStore();
   const { influencers, getInfluencers } = allInfluencerStore();
 
   const [selectedDateRange, setSelectedDateRange] = useState<'week' | 'month' | 'year' | 'all'>(
@@ -22,6 +22,10 @@ function ResearchTaskPage() {
   useEffect(() => {
     getInfluencers();
   }, [getInfluencers]);
+
+  useEffect(() => {
+    resetTweets();
+  }, []);
 
   const filteredInfluencers = influencers.filter((influencer) =>
     influencer.name.toLowerCase().includes(influencerName.name.toLowerCase())
@@ -49,11 +53,13 @@ function ResearchTaskPage() {
 
   return (
     <div className="p-6 bg-base-200 text-base-content rounded-lg container mx-auto pt-">
+      <ReturnDashboard route="/" title="Home" backRoute="Dashboard" />
+
       <h2 className="text-2xl font-semibold mb-1">Research Tasks</h2>
 
       <div className="flex space-x-4 mb-6">
         <button onClick={handleStartResearch} className="btn btn-primary flex-1">
-          Specific Influencer
+          Search Influencer
         </button>
       </div>
       <div className="mb-4">
@@ -134,7 +140,7 @@ function ResearchTaskPage() {
         <div className="mt-6">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
-              <thead className="bg-gray-100">
+              <thead className="bg-zinc-700">
                 <tr>
                   <th className="p-3 text-left border">No.</th>
                   <th className="p-3 text-left border">Tweet Text</th>
@@ -144,8 +150,8 @@ function ResearchTaskPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredTweets.map((tweet, index) => (
-                  <tr key={tweet._id} className="border-b hover:bg-gray-50">
+                {filteredTweets.slice(0, claimsToAnalyze).map((tweet, index) => (
+                  <tr key={tweet._id} className="border-b hover:bg-slate-500">
                     <td className="p-3 border">{index + 1}</td>
                     <td className="p-3 border">{tweet.text}</td>
                     <td className="p-3 border">{tweet.categoryType}</td>
