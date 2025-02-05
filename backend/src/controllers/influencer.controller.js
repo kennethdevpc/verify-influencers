@@ -257,8 +257,15 @@ export const getInfluencersDetails = async (req, res) => {
   let cantExercise = 0;
 
   for (let i = 0; i < tweets.length; i++) {
-    scoreData = scoreData + parseInt(tweets[i].cleanedPhrase.split('|')[0]);
-
+    // scoreData = scoreData + parseInt(tweets[i].cleanedPhrase.split('|')[0]);
+    let match = tweets[i].cleanedPhrase.match(/(\d+)\|/);
+    if (match) {
+      let number = parseInt(match[1]);
+      scoreData += number;
+    } else {
+      scoreData += 1;
+    }
+    //-------------------
     const statusVerified = tweets[i].statusAnalysis.toLowerCase().replace(/\s/g, ''); // Convertir a minúsculas y eliminar espacios
     const similarity = stringSimilarity.compareTwoStrings(statusVerified, 'verified');
     if (similarity >= 0.7) {
