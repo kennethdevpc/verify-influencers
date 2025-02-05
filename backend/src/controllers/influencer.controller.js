@@ -82,8 +82,6 @@ export const getUserTweetsFuncionDelete = async (req, res) => {
     const tweetsWithOutfilterDb = await addTweetsToDBWithoutfilter(data);
 
     if (data[0].author_id) {
-      console.log('Procesando datos from body o teewts');
-
       const healthTweets = await filterHealthTweets(data);
       if (healthTweets.success) {
         const claimsFromTweets = await healthTweets.message;
@@ -105,11 +103,8 @@ export const getUserTweetsFuncionDelete = async (req, res) => {
 
       // const tweets = await getAllTweets();
       if (tweets.length > 0) {
-        console.log('datos desde db');
-
         res.status(200).json(tweets);
       } else {
-        console.log('no hay datos envia el error');
         let situation = (data[0].situation = 'with out data from DB');
         res.status(200).json(data);
       }
@@ -117,7 +112,6 @@ export const getUserTweetsFuncionDelete = async (req, res) => {
       // res.status(200).json(tweets);
     }
   } catch (error) {
-    console.log('Error:', error);
     res.status(500).json(error);
   }
 };
@@ -125,12 +119,10 @@ export const getUserTweetsFuncionDelete = async (req, res) => {
 export const insertTweetsIndB = async (req, res) => {
   try {
     const dataFromPostman = await addTweetsToDB(req.body);
-    console.log('------------', dataFromPostman);
     res.send(dataFromPostman);
   } catch (error) {}
 };
 export const analyzeInfluencerA = async (req, res) => {
-  console.log(req.body);
   res.send('analyzeInfluencer');
 };
 
@@ -141,7 +133,6 @@ export const getInfluencerDetails = async (req, res) => {
 export const getInfluencers = async (req, res) => {
   const tweets = await getInfluencersService();
   let principalData = tweets.map(async (tweet) => {
-    console.log('------', tweet.id);
     let data = await getInfluencersDetailsGeneral(tweet.id);
     return data;
     // getInfluencersDetailsGeneral;
@@ -168,12 +159,6 @@ export const getInfluencersDetailsGeneral = async (req, res) => {
 
   for (let i = 0; i < tweets.length; i++) {
     scoreData = scoreData + parseInt(tweets[i].cleanedPhrase.split('|')[0]);
-    console.log('scoreDataxxxx------:', tweets[i]);
-
-    if (tweets[i].id === '1658481854230478850') {
-      console.log('scoreData------:', scoreData);
-    }
-
     const statusVerified = tweets[i].statusAnalysis.toLowerCase().replace(/\s/g, ''); // Convertir a minúsculas y eliminar espacios
     const similarity = stringSimilarity.compareTwoStrings(statusVerified, 'verified');
     if (similarity >= 0.7) {
@@ -187,7 +172,6 @@ export const getInfluencersDetailsGeneral = async (req, res) => {
     const mentalHealth = stringSimilarity.compareTwoStrings(statusCategory, 'mentalhealth');
     const fitness = stringSimilarity.compareTwoStrings(statusCategory, 'fitness');
     const exercise = stringSimilarity.compareTwoStrings(statusCategory, 'exercise');
-    console.log(statusCategory);
     if (nutrition >= 0.6) {
       cantNutrition = cantNutrition + 1;
     } else if (medicine >= 0.6) {
@@ -200,18 +184,6 @@ export const getInfluencersDetailsGeneral = async (req, res) => {
       cantExercise = cantExercise + 1;
     }
   }
-  console.log(
-    'cantNutrition:',
-    cantNutrition,
-    'cantMedicine:',
-    cantMedicine,
-    'cantMentalHealth:',
-    cantMentalHealth,
-    'cantFitness:',
-    cantFitness,
-    'cantExercise:',
-    cantExercise
-  );
 
   // Crear un objeto con las categorías que tengan más de 1 tweet
   const categoriesWithCount = {
@@ -226,7 +198,6 @@ export const getInfluencersDetailsGeneral = async (req, res) => {
   const filteredCategories = Object.fromEntries(
     Object.entries(categoriesWithCount).filter(([_, value]) => value !== null)
   );
-  console.log(filteredCategories);
 
   let score = Math.ceil(scoreData / tweets.length);
 
@@ -279,7 +250,6 @@ export const getInfluencersDetails = async (req, res) => {
     const mentalHealth = stringSimilarity.compareTwoStrings(statusCategory, 'mentalhealth');
     const fitness = stringSimilarity.compareTwoStrings(statusCategory, 'fitness');
     const exercise = stringSimilarity.compareTwoStrings(statusCategory, 'exercise');
-    console.log(statusCategory);
     if (nutrition >= 0.6) {
       cantNutrition = cantNutrition + 1;
     } else if (medicine >= 0.6) {
@@ -292,18 +262,6 @@ export const getInfluencersDetails = async (req, res) => {
       cantExercise = cantExercise + 1;
     }
   }
-  console.log(
-    'cantNutrition:',
-    cantNutrition,
-    'cantMedicine:',
-    cantMedicine,
-    'cantMentalHealth:',
-    cantMentalHealth,
-    'cantFitness:',
-    cantFitness,
-    'cantExercise:',
-    cantExercise
-  );
 
   // Crear un objeto con las categorías que tengan más de 1 tweet
   const categoriesWithCount = {
@@ -318,7 +276,6 @@ export const getInfluencersDetails = async (req, res) => {
   const filteredCategories = Object.fromEntries(
     Object.entries(categoriesWithCount).filter(([_, value]) => value !== null)
   );
-  console.log(filteredCategories);
 
   let score = Math.ceil(scoreData / tweets.length);
 

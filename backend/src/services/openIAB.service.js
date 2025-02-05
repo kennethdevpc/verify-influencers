@@ -262,7 +262,6 @@ export async function extractClaimsFromTweetsfilteredTweets(lines) {
 // Obtener tweets de un usuario
 
 export async function addTweetsToDB(twwitsfiltered) {
-  console.log('twwitsfiltered', twwitsfiltered[0]);
   try {
     const twwitsToDB = twwitsfiltered.map((data) => ({
       id: data.id,
@@ -302,7 +301,6 @@ export async function addTweetsToDB(twwitsfiltered) {
       });
 
       let twwitsToDBnotrepited = await RepetedClaims(twwitsToDB);
-      console.log('twwitsToDBnotrepited--', twwitsToDBnotrepited);
 
       //---verifica en la base de datos si ya existen los datos que trae
       // Obtener solo los IDs de los documentos que se van a insertar
@@ -463,15 +461,11 @@ export async function RepetedClaims(texts) {
       });
 
       const results = await Promise.all(deepCheckPromises);
-      console.log('results', results);
       if (results.some((result) => result)) {
         isDuplicate = true;
-        console.log('isDuplicate', isDuplicate);
       }
 
       if (!isDuplicate) {
-        console.log('isDuplicatebb', isDuplicate);
-
         healthTweets.push(tweetInfo);
       }
     } catch (error) {
@@ -479,10 +473,7 @@ export async function RepetedClaims(texts) {
       return error;
     }
   }
-  console.log(
-    'healthTweets',
-    healthTweets.map((e) => e.text)
-  );
+
   return healthTweets;
 }
 
