@@ -27,6 +27,6 @@ router.post('/claimsfilteredTweets', getClaimsfilteredTweets); //--obtengo de ma
 router.get('/influencers', getInfluencers); //---obtengo los influencers
 router.get('/details/:id', getInfluencersDetails); //---obtengo los el detalle de un influencer
 //todo Obtener from database
-router.get('/details/:id', getInfluencerDetails);
+// router.get('/details/:id', getInfluencerDetails);
 
 export default router;
